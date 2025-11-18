@@ -7,7 +7,7 @@
 }
 
 body {
-  background: #0a0a0a;
+  background: white;
   color: #fff;
   overflow-x: hidden;
   height: 100%;
@@ -45,6 +45,15 @@ header {
   border-radius: 50%;
   border: 2px solid #00ffff;
   object-fit: cover;
+}
+
+.logo a{
+  color: #ff00ff;
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  font-weight: 700;
+  gap: 15px;
 }
 
 nav ul {
@@ -151,7 +160,7 @@ nav a.active {
 
 .card:hover {
   transform: translateY(-10px);
-  box-shadow: 0 0 25px #00ffff;
+  box-shadow: 0 0 35px #000;
 }
 
 .card img {
