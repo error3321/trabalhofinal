@@ -4,8 +4,6 @@
   padding: 0;
   box-sizing: border-box;
   font-family: "Poppins", sans-serif;
-  color: black;
-  text-align: center;
 }
 
 body {
@@ -26,11 +24,10 @@ header {
   align-items: center;
   padding: 15px 50px;
   background: #111;
-  border-bottom: 2px solid #ff00ff;
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: 0 0 20px rgba(255, 0, 255, 0.3);
+  box-shadow: 0 0 20px rgba(0, 0, 0);
 }
 
 .logo {
@@ -50,7 +47,7 @@ header {
   object-fit: cover;
 }
 
-.logo a{
+.logo a {
   color: #ff00ff;
   display: flex;
   align-items: center;
@@ -75,7 +72,9 @@ nav a {
 
 nav a:hover,
 nav a.active {
-  color: #00ffff;
+  color: aliceblue;
+  border-bottom: 2px solid white;
+  padding-bottom: 5px;
 }
 
 /* ===== Carrossel ===== */
@@ -125,20 +124,31 @@ nav a.active {
 }
 
 @keyframes slidePromo {
-  0% { transform: translateX(0); }
-  45% { transform: translateX(0); }
-  55% { transform: translateX(-50%); }
-  100% { transform: translateX(-50%); }
+  0% {
+    transform: translateX(0);
+  }
+
+  45% {
+    transform: translateX(0);
+  }
+
+  55% {
+    transform: translateX(-50%);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
 }
 
 /* ===== Produtos em Destaque ===== */
 .destaque-titulo {
   text-align: center;
   font-size: 2.2em;
-  color: #ff00ff;
+  color: black;
   margin-top: 40px;
   letter-spacing: 1px;
-  text-shadow: 0 0 15px #ff00ff;
+  text-shadow: 0 0 15px black;
 }
 
 .cards-container {
@@ -205,32 +215,226 @@ nav a.active {
   box-shadow: 0 0 15px #ff00ff;
 }
 
-/* ===== Rodapé ===== */
-footer {
+/* --- Novo Rodapé (Inspirado na Nike) --- */
+
+.footer-nike {
+  background-color: #111;
+  /* Cor de fundo escura, como a Nike */
+  color: #fff;
+  padding: 40px 60px 20px;
+  font-family: var(--host-rem-12, .75rem);
+  line-height: 1.6;
+  box-shadow: 0 0 20px rgba(0, 0, 0);
+  justify-content: left;
+}
+
+/* Estrutura Principal */
+.footer-top {
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 30px;
+  border-bottom: 1px solid #333;
+  /* Linha divisória sutil */
+}
+
+/* Colunas de Links */
+.footer-links {
+  display: flex;
+  gap: 50px;
+  /* Espaço entre as colunas de links */
+  justify-content: left;
+}
+
+.footer-column h3 {
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  color: #ccc;
+  /* Cor um pouco mais clara para o título */
+}
+
+.footer-column ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-column ul li {
+  margin-bottom: 8px;
+}
+
+.footer-column a {
+  color: #fff;
+  text-decoration: none;
+  font-size: 12px;
+  transition: color 0.3s;
+}
+
+.footer-column a:hover {
+  color: #aaa;
+}
+
+/* Redes Sociais, Apps e Pagamento (Lateral Direita) */
+.footer-social-apps {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  /* Espaço entre as seções da direita */
+  align-items: flex-start;
+}
+
+.social-media h3,
+.app-download h3,
+.payment-forms h3 {
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  color: #ccc;
+  text-align: justify;
+}
+
+.social-media h3 {
+  padding-left: 35px;
+}
+
+.social-icons a,
+.app-links a {
+  color: #fff;
+  margin-right: 15px;
+  display: inline-block;
+  transition: transform 0.3s;
+}
+
+/* AJUSTE para transformar o ícone Font Awesome em um círculo com fundo */
+.social-icons a i,
+.app-links a i {
+  color: #fff;
+  /* Cor do ícone (o "f") */
+  font-size: 16px;
+  /* Tamanho do ícone dentro do círculo */
+
+  /* Configuração para o círculo/fundo */
+  background-color: #000000;
+  /* Fundo preto/escuro do círculo */
+  width: 35px;
+  /* Largura total do círculo */
+  height: 35px;
+  /* Altura total do círculo */
+  border-radius: 50%;
+  /* Transforma o quadrado em círculo */
+
+  /* Centralização do ícone dentro do círculo */
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+
+  margin-right: 10px;
+  /* Mantém o espaçamento entre os ícones */
+}
+
+.social-icons a:hover {
+  transform: scale(1.1);
+  color: #ddd;
+}
+
+.app-links a:hover {
+  transform: scale(1.1);
+  color: #ddd;
+}
+
+.app-links {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+}
+
+.app-store-btn {
+  display: flex;
+  gap: 10px;
+}
+
+.payment-icons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+}
+
+
+/* Estilização para as imagens de badge (Ajuste o caminho da imagem) */
+.app-links img {
+  height: 40px;
+  /* Altura padrão para os badges */
+}
+
+.payment-icons img {
+  margin-right: 10px;
+  height: 25px;
+  /* Altura padrão para os ícones de pagamento */
+  vertical-align: middle;
+}
+
+/* Parte Inferior do Rodapé */
+.footer-bottom {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 50px;
-  background: #111;
-  border-top: 2px solid #00ffff;
-  color: #fff;
-  font-size: 0.9em;
-  margin-top: auto;
+  padding-top: 20px;
+  font-size: 11px;
+  color: #999;
 }
 
-footer .social {
-  display: flex;
-  gap: 20px;
-}
-
-footer .social a {
-  color: #ff00ff;
+.footer-legal-links a {
+  color: #999;
   text-decoration: none;
-  transition: 0.3s;
+  margin: 0 5px;
 }
 
-footer .social a:hover {
-  color: #00ffff;
+.footer-legal-links .separator {
+  color: #555;
+}
+
+.footer-legal-links a:hover {
+  color: #fff;
+}
+
+/* --- Responsividade (Para telas menores) --- */
+@media (max-width: 900px) {
+  .footer-nike {
+    padding: 30px 20px 15px;
+  }
+
+  .footer-top {
+    flex-direction: column;
+    gap: 30px;
+  }
+
+  .footer-links {
+    flex-wrap: wrap;
+    gap: 20px 40px;
+  }
+
+  .footer-column {
+    width: 40%;
+    /* Faz com que duas colunas caibam por linha em telas menores */
+  }
+
+  .footer-social-apps {
+    align-items: flex-start;
+  }
+
+  .footer-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    text-align: left;
+  }
+
+  .footer-legal-links {
+    text-align: left;
+  }
 }
 
 /* ===== Responsivo ===== */
@@ -341,65 +545,270 @@ footer .social a:hover {
 }
 
 .admin-login {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 70vh;
-    padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 70vh;
+  padding: 20px;
 }
 
 .login-container {
-    background: #ffffff22;
-    backdrop-filter: blur(8px);
-    border-radius: 15px;
-    padding: 30px;
-    width: 350px;
-    box-shadow: 0 0 50px rgba(0,0,0,0.5);
-    text-align: center;
+  background: #ffffff22;
+  backdrop-filter: blur(8px);
+  border-radius: 15px;
+  padding: 30px;
+  width: 350px;
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+  text-align: center;
 }
 
 .login-container h1 {
-    margin-bottom: 20px;
-    color: black;
-    font-size: 26px;
+  margin-bottom: 20px;
+  color: black;
+  font-size: 26px;
 }
 
 .login-form {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
 /* Inputs bonitos */
 .login-form input {
-    padding: 12px;
-    border: 2px solid black;
-    background: #ffffffdd;
-    border-radius: 8px;
-    font-size: 16px;
-    transition: 0.3s;
+  padding: 12px;
+  border: 2px solid black;
+  background: #ffffffdd;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: 0.3s;
 }
 
 .login-form input:focus {
-    outline: none;
-    border-color: #00aaff;
-    box-shadow: 0 0 8px #00eaff;
+  outline: none;
+  border-color: #00aaff;
+  box-shadow: 0 0 8px #00eaff;
 }
 
 /* Botão estiloso */
 .adm-btn {
-    padding: 12px;
-    background: ghostwhite;
-    color: black;
-    border: none;
-    border-radius: 10px;
-    font-size: 18px;
-    cursor: pointer;
-    transition: 0.3s;
-    box-shadow: 0 0 15px rgba(0,0,0,0.5);
+  padding: 12px;
+  background: ghostwhite;
+  color: black;
+  border: none;
+  border-radius: 10px;
+  font-size: 18px;
+  cursor: pointer;
+  transition: 0.3s;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
 }
 
 .adm-btn:hover {
-    background: #00aaff;
-    transform: scale(1.03);
+  background: #00aaff;
+  transform: scale(1.03);
+}
+
+/* Variáveis de Cores (baseadas no seu tema) */
+:root {
+    --cor-primaria: #ff00ff; /* Magenta */
+    --cor-secundaria: #00ffff; /* Ciano */
+    --cor-fundo: #111;
+    --cor-texto: #fff;
+    --cor-texto-claro: #ccc;
+    --cor-link: #00ffff;
+    --cor-link-hover: #ff00ff;
+    --cor-container-fundo: #1c1c1c; /* Novo fundo para o container, mais claro que o body */
+}
+
+/* Estilos Globais */
+/* ALTERADO: Aplicado apenas à página de login para evitar conflitos */
+.login-page { 
+    font-family: 'Poppins', sans-serif;
+    /* GARANTINDO O FUNDO ESCURO DO SEU TEMA */
+    background-color: var(--cor-fundo); 
+    color: var(--cor-texto);
+    display: flex;
+    justify-content: center;
+    align-items: center; /* Centraliza verticalmente também para o container ficar no meio */
+    min-height: 100vh;
+    margin: 0;
+    /* Removemos o padding top se centralizarmos verticalmente */
+    padding: 0 20px; 
+    box-sizing: border-box;
+}
+
+/* Estilo do container centralizado */
+.login-container {
+    max-width: 450px;
+    width: 100%;
+    /* Ajuste de padding interno */
+    padding: 30px; 
+    text-align: left;
+    background-color: var(--cor-container-fundo);
+    border-radius: 10px;
+    
+    /* Adicionando Borda Neon e Sombra */
+    border: 1px solid var(--cor-primaria);
+    box-shadow: 0 0 15px rgba(255, 0, 255, 0.5); /* Sombra Magenta */
+    animation: neon-glow 3s infinite alternate; /* Aplica a animação */
+}
+
+/* Logo */
+.logo-login {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.logo-login i {
+    font-size: 3rem; /* Aumentado um pouco */
+    color: var(--cor-secundaria); 
+    /* Removemos a borda para usar apenas a cor */
+    padding: 0;
+    border-radius: 0;
+    text-shadow: 0 0 10px var(--cor-secundaria), 0 0 20px var(--cor-secundaria);
+}
+
+/* Título */
+.login-container h1 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 25px;
+    color: var(--cor-texto);
+}
+
+/* Contêiner de país */
+.country-selector {
+    font-size: 0.9rem;
+    color: var(--cor-texto-claro);
+    margin-bottom: 20px;
+}
+
+.country-selector a {
+    color: var(--cor-secundaria);
+    text-decoration: none; /* Removendo o sublinhado padrão */
+    border-bottom: 1px solid var(--cor-secundaria);
+    margin-left: 5px;
+    transition: color 0.3s, border-color 0.3s;
+}
+
+.country-selector a:hover {
+    color: var(--cor-primaria);
+    border-bottom-color: var(--cor-primaria);
+}
+
+/* Input Group (E-mail e Senha) */
+.input-group {
+    margin-bottom: 15px; 
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px 15px;
+    font-size: 1rem;
+    border: 1px solid #444;
+    background-color: #333; /* Fundo do input levemente mais claro */
+    color: var(--cor-texto);
+    border-radius: 5px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: var(--cor-secundaria);
+    box-shadow: 0 0 8px var(--cor-secundaria); /* Sombra mais forte no foco */
+}
+
+/* AJUSTE PARA GARANTIR QUE O TEXTO DO PLACEHOLDER SEJA VISÍVEL */
+.input-group input::placeholder {
+    color: var(--cor-texto-claro); 
+    opacity: 0.7; 
+}
+
+
+/* Link "Esqueceu sua senha?" */
+.forgot-password {
+    display: block; 
+    text-align: right;
+    font-size: 0.9rem;
+    color: var(--cor-link);
+    text-decoration: none;
+    margin-bottom: 25px;
+    transition: color 0.3s;
+}
+
+.forgot-password:hover {
+    color: var(--cor-link-hover);
+}
+
+/* Textos legais/Políticas */
+.legal-text {
+    font-size: 0.8rem; /* Fonte um pouco menor */
+    color: var(--cor-texto-claro);
+    line-height: 1.4;
+    margin-bottom: 30px;
+    padding: 0 10px; /* Adiciona um pouco de espaço lateral */
+}
+
+.legal-text a {
+    color: var(--cor-secundaria);
+    text-decoration: none;
+    border-bottom: 1px dashed var(--cor-secundaria);
+    transition: color 0.3s, border-color 0.3s;
+}
+
+.legal-text a:hover {
+    color: var(--cor-primaria);
+    border-bottom-color: var(--cor-primaria);
+}
+
+/* Botão Continuar */
+.btn-continue {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    background-color: var(--cor-texto);
+    color: var(--cor-fundo);
+    border: none;
+    border-radius: 20px;
+    font-size: 1rem;
+    font-weight: 700; /* Mais negrito */
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+    transition: background-color 0.3s, transform 0.1s;
+}
+
+.btn-continue:hover {
+    background-color: var(--cor-secundaria); /* Hover com cor Ciano */
+    color: var(--cor-fundo);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 255, 255, 0.5);
+}
+
+/* Animação para o efeito Neon Glow */
+@keyframes neon-glow {
+    0% {
+        box-shadow: 0 0 10px rgba(255, 0, 255, 0.5), 0 0 20px rgba(255, 0, 255, 0.2);
+        border-color: var(--cor-primaria);
+    }
+    50% {
+        box-shadow: 0 0 15px rgba(0, 255, 255, 0.7), 0 0 25px rgba(0, 255, 255, 0.4);
+        border-color: var(--cor-secundaria);
+    }
+    100% {
+        box-shadow: 0 0 10px rgba(255, 0, 255, 0.5), 0 0 20px rgba(255, 0, 255, 0.2);
+        border-color: var(--cor-primaria);
+    }
+}
+
+/* Responsividade básica */
+@media (max-width: 600px) {
+    .login-container {
+        padding: 20px;
+        margin: 20px;
+    }
+    /* Ajusta a centralização vertical em telas pequenas */
+    .login-page {
+        align-items: flex-start;
+        padding-top: 50px;
+    }
 }
