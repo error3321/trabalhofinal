@@ -16,8 +16,8 @@
             <ul>
                 <li><a href="../index.html">Início</a></li>
                 <li><a href="../produtos.html">Produtos</a></li>
-                <li><a href="../venda.html">Venda</a></li>
                 <li><a href="../sobre.html">Sobre</a></li>
+                <li><a href="../login.html">Entrar</a></li>
             </ul>
         </nav>
     </header>
@@ -40,7 +40,12 @@ function entrar(e){
     e.preventDefault(); // impede envio do formulário
     // aqui você poderia validar usuário e senha futuramente
     window.location.href = "./painel.html"; // redireciona para o painel JS
-}
+} else {
+                // Lógica de Segurança: Redireciona se não estiver logado.
+                // Isso evita que usuários deslogados permaneçam no painel.
+                console.log("Nenhum usuário logado. Redirecionando para login.");
+                window.location.href = "../login.html";
+            }
 </script>
         </div>
     </section>

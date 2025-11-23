@@ -118,7 +118,7 @@
 
         <nav class="space-x-6 text-lg">
             <a href="dashboard.html" class="hover:text-highlight-main transition">Dashboard</a>
-            <a href="index.html" id="signOutLink" class="hover:text-grey-900 transition font-semibold">Sair</a>
+            <a href="sair.html" id="signOutLink" class="hover:text-grey-900 transition font-semibold">Sair</a>
         </nav>
     </header>
 
@@ -346,7 +346,7 @@
                 // Lógica de Segurança: Redireciona se não estiver logado.
                 // Isso evita que usuários deslogados permaneçam no painel.
                 console.log("Nenhum usuário logado. Redirecionando para login.");
-                window.location.href = 'login.html';
+                window.location.href = "../login.html";
             }
         });
 
