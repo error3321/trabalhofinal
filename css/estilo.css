@@ -812,3 +812,146 @@ nav a.active {
         padding-top: 50px;
     }
 }
+
+:root {
+    --highlight-main: #3B82F6;    /* Azul Suave (Blue 500) */
+    --highlight-secondary: #60A5FA; /* Azul Claro (Blue 400) */
+    --bg-dark: #1F2937;         /* Fundo Escuro (Gray 800) */
+    --bg-card: #374151;         /* Fundo de Cartão/Tabela (Gray 700) */
+}
+
+.admin-table th {
+    background-color: #4B5563; /* Gray 600 */
+    color: #D1D5DB; /* Gray 300 */
+    text-transform: uppercase;
+    font-weight: 600;
+}
+.admin-table td {
+    border-color: #4B5563;
+}
+
+/* Estilo para a imagem de exemplo na tabela */
+.table-img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #6B7280;
+}
+
+/* ---------------------------------------------------------------------- */
+/* ESTILOS DE BOTÃO PRINCIPAL (Adicionar Produto)                         */
+/* ---------------------------------------------------------------------- */
+.add-btn {
+    background-color: var(--highlight-main);
+    color: white;
+    font-weight: 600;
+    transition: background-color 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+.add-btn:hover {
+    background-color: var(--highlight-secondary);
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* ---------------------------------------------------------------------- */
+/* ESTILOS DO MODAL                                                       */
+/* ---------------------------------------------------------------------- */
+
+/* Estilo do Fundo do Modal (Overlay) */
+.modal-overlay {
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(3px);
+    z-index: 1000;
+}
+/* Estilo do Card dentro do Modal */
+.modal-content {
+    background-color: var(--bg-card);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5); 
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+/* Estilos dos inputs no modal */
+.modal-content input, .modal-content textarea {
+    background-color: #4B5563; /* Gray 600 */
+    border: 1px solid #6B7280; /* Gray 500 */
+    color: white;
+}
+.modal-content input:focus, .modal-content textarea:focus {
+    border-color: var(--highlight-main);
+    box-shadow: 0 0 5px rgba(59, 130, 246, 0.5); /* Sombra suave azul */
+}
+
+/* Confirm modal customizado */
+.rp-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 60;
+  background: rgba(2,6,23,0.55);
+}
+.rp-confirm-box {
+  width: 100%;
+  max-width: 480px;
+  background: #0f1724;
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 12px 40px rgba(2,6,23,0.6);
+  border: 1px solid rgba(255,255,255,0.04);
+  color: #e6eef8;
+}
+.rp-confirm-header {
+  display:flex;
+  gap:12px;
+  align-items:center;
+  margin-bottom:8px;
+}
+.rp-confirm-icon {
+  width:48px;
+  height:48px;
+  border-radius:8px;
+  object-fit:cover;
+  flex-shrink:0;
+}
+.rp-confirm-title { font-size:1.05rem; font-weight:700; }
+.rp-confirm-body { color: rgba(226,232,240,0.9); margin: 8px 0 16px; }
+.rp-confirm-actions { display:flex; justify-content:flex-end; gap:10px; }
+.rp-confirm-btn { padding: .5rem .85rem; border-radius:8px; font-weight:600; cursor:pointer; border: none; }
+.rp-confirm-btn.cancel { background: transparent; color: #e6eef8; border: 1px solid rgba(255,255,255,0.06); }
+.rp-confirm-btn.confirm { background: #ef4444; color: white; }
+
+/* Toast container e toasts */
+.rp-toast-container {
+  position: fixed;
+  right: 16px;
+  bottom: 18px;
+  z-index: 70;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-end;
+}
+.rp-toast {
+  background: rgba(15,23,36,0.95);
+  color: #e6eef8;
+  padding: 10px 14px;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(2,6,23,0.6);
+  transform: translateY(12px);
+  opacity: 0;
+  transition: transform .24s ease, opacity .24s ease;
+  font-weight:600;
+  border: 1px solid rgba(255,255,255,0.03);
+}
+.rp-toast.show { transform: translateY(0); opacity: 1; }
+.rp-toast-success { background: linear-gradient(90deg, rgba(16,185,129,0.12), rgba(16,185,129,0.06)); border-left:4px solid #10b981; }
+.rp-toast-info { background: linear-gradient(90deg, rgba(59,130,246,0.06), rgba(59,130,246,0.03)); border-left:4px solid #3b82f6; }
+.rp-toast-error { background: linear-gradient(90deg, rgba(239,68,68,0.06), rgba(239,68,68,0.03)); border-left:4px solid #ef4444; }
+
+@media (max-width: 480px) {
+  .rp-toast-container { right: 10px; left: 10px; align-items: center; }
+  .rp-toast { width: 100%; max-width: 420px; box-sizing: border-box; }
+}

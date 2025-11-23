@@ -1,146 +1,413 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Painel Administrativo</title>
-<link rel="stylesheet" href="../css/estilo.css">
-<style>
-/* Estilo básico e sério, cores sutis */
-body { font-family: "Poppins", sans-serif; background:#f9f9f9; margin:0; padding:0;}
-header { background:#fff; padding:20px; border-bottom:1px solid #ccc; text-align:center; font-weight:bold; color:#333;}
-h1,h2 { color:#333; }
-table { width:100%; border-collapse:collapse; margin-bottom:30px;}
-th,td { border:1px solid #ccc; padding:8px; text-align:center; }
-th { background:#eee; }
-button { padding:5px 10px; margin:2px; border:none; border-radius:5px; cursor:pointer;}
-.add-btn { background:#00cccc; color:#fff; }
-.add-btn:hover { background:#ff00ff; color:#fff;}
-.edit-btn { background:#00cccc; color:#fff;}
-.edit-btn:hover { background:#ff00ff; color:#fff;}
-.delete-btn { background:#cc3333; color:#fff;}
-.delete-btn:hover { background:#990000; }
-.table-img { width:60px; border-radius:5px;}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo - RetroPoint</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <style>
+        /* VARIÁVEIS DE TEMA */
+        :root {
+            --highlight-main: #3B82F6;
+            /* Azul Suave (Blue 500) */
+            --highlight-secondary: #60A5FA;
+            /* Azul Claro (Blue 400) */
+            --bg-dark: #1F2937;
+            /* Fundo Escuro (Gray 800) */
+            --bg-card: #374151;
+            /* Fundo de Cartão/Tabela (Gray 700) */
+        }
+
+        /* Estilos do corpo e fundo */
+        body {
+            background-color: var(--bg-dark);
+            color: #F3F4F6;
+            /* Texto Branco Suave */
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Estilo para o cabeçalho personalizado */
+        header {
+            border-color: var(--highlight-main);
+        }
+
+        /* Estilos de Botão Adicionar */
+        .add-btn {
+            background-color: var(--highlight-main);
+            color: white;
+            font-weight: 600;
+            transition: background-color 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .add-btn:hover {
+            background-color: var(--highlight-secondary);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Estilos da Tabela */
+        .admin-table th {
+            background-color: #4B5563;
+            /* Gray 600 */
+            color: #D1D5DB;
+            /* Gray 300 */
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .admin-table td {
+            border-color: #4B5563;
+        }
+
+        /* Estilo para a imagem de exemplo na tabela */
+        .table-img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #6B7280;
+        }
+
+        /* Estilos do Modal */
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(3px);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: var(--bg-card);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content input,
+        .modal-content textarea {
+            background-color: #4B5563;
+            border: 1px solid #6B7280;
+            color: white;
+        }
+
+        .modal-content input:focus,
+        .modal-content textarea:focus {
+            border-color: var(--highlight-main);
+            box-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
+        }
+    </style>
 </head>
-<body>
 
-<header>Painel Administrativo - RetroPoint</header>
+<div id="toast" class="fixed bottom-6 right-6 px-4 py-3 rounded-xl text-white font-semibold shadow-xl
+            bg-green-600 hidden transition-all duration-300">
+</div>
 
-<main style="padding:20px;">
-    <h2>Produtos</h2>
-    <button class="add-btn" onclick="adicionarProduto()">Adicionar Produto</button>
-    <table id="produtosTabela">
-        <thead>
-            <tr><th>Imagem</th><th>Nome</th><th>Preço</th><th>Ações</th></tr>
-        </thead>
-        <tbody></tbody>
-    </table>
+<body class="p-4 sm:p-8">
 
-    <h2>Vendas Recebidas</h2>
-    <table id="vendasTabela">
-        <thead>
-            <tr><th>Nome</th><th>Telefone</th><th>Email</th><th>Descrição</th><th>Foto</th><th>Ações</th></tr>
-        </thead>
-        <tbody></tbody>
-    </table>
-</main>
+    <header
+        class="w-full bg-gray-900 text-white shadow-lg mb-8 py-4 px-6 flex justify-between items-center rounded-xl border">
 
-<script>
-// Dados iniciais (simulados)
-let produtos = [
-    {nome:'Nintendo NES', preco:'499,00', img:'/css/imgs/nes.jpg'},
-    {nome:'Sega Mega Drive', preco:'449,00', img:'/css/imgs/mega-drive.jpg'}
-];
+        <div class="flex items-center space-x-4">
+            <div class="text-2xl font-bold tracking-wide">
+                RetroPoint • Admin
+            </div>
+            <div class="text-sm text-gray-400">
+                Usuário: <span id="accountName" class="font-medium text-highlight-secondary">Carregando...</span>
+            </div>
+        </div>
 
-let vendas = [
-    {nome:'João Silva', telefone:'38999999999', email:'joao@email.com', descricao:'NES em bom estado', foto:'/css/imgs/nes.jpg'}
-];
+        <nav class="space-x-6 text-lg">
+            <a href="dashboard.html" class="hover:text-highlight-main transition">Dashboard</a>
+            <a href="index.html" id="signOutLink" class="hover:text-grey-900 transition font-semibold">Sair</a>
+        </nav>
+    </header>
 
-// Funções para exibir dados
-function atualizarTabelaProdutos(){
-    const tbody = document.querySelector('#produtosTabela tbody');
-    tbody.innerHTML = '';
-    produtos.forEach((p,index)=>{
-        tbody.innerHTML += `<tr>
-            <td><img src="${p.img}" class="table-img"></td>
-            <td>${p.nome}</td>
-            <td>R$ ${p.preco}</td>
-            <td>
-                <button class="edit-btn" onclick="editarProduto(${index})">Editar</button>
-                <button class="delete-btn" onclick="excluirProduto(${index})">Excluir</button>
-            </td>
-        </tr>`;
-    });
-}
+    <main class="p-4 sm:p-8">
+        <section class="mb-12">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-semibold text-highlight-secondary">Produtos</h2>
+                <button id="addProductBtn" class="add-btn px-4 py-2 rounded-lg">
+                    <i class="fas fa-plus mr-2"></i> Adicionar Produto
+                </button>
+            </div>
 
-function atualizarTabelaVendas(){
-    const tbody = document.querySelector('#vendasTabela tbody');
-    tbody.innerHTML = '';
-    vendas.forEach((v,index)=>{
-        tbody.innerHTML += `<tr>
-            <td>${v.nome}</td>
-            <td>${v.telefone}</td>
-            <td>${v.email}</td>
-            <td>${v.descricao}</td>
-            <td><img src="${v.foto}" class="table-img"></td>
-            <td>
-                <button class="edit-btn" onclick="editarVenda(${index})">Editar</button>
-                <button class="delete-btn" onclick="excluirVenda(${index})">Excluir</button>
-            </td>
-        </tr>`;
-    });
-}
+            <div class="overflow-x-auto rounded-lg shadow-xl">
+                <table class="min-w-full divide-y divide-gray-700 admin-table">
+                    <thead>
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs tracking-wider rounded-tl-lg">Imagem</th>
+                            <th class="px-4 py-3 text-left text-xs tracking-wider">Nome</th>
+                            <th class="px-4 py-3 text-left text-xs tracking-wider">Preço</th>
+                            <th class="px-4 py-3 text-center text-xs tracking-wider rounded-tr-lg">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productTableBody" class="divide-y divide-gray-700 bg-gray-800">
+                        <tr class="hover:bg-gray-700" data-id="p_1001" data-desc="">
+                            <td class="px-4 py-4 whitespace-nowrap">
+                                <img src="https://placehold.co/60x60/374151/FFFFFF?text=NES" alt="Nintendo NES"
+                                    class="table-img">
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap">Nintendo NES</td>
+                            <td class="px-4 py-4 whitespace-nowrap">R$ 499,00</td>
+                            <td class="px-4 py-4 whitespace-nowrap text-center">
+                                <button
+                                    class="btn-edit bg-yellow-500 text-black px-3 py-1 text-sm rounded-md mr-2 transition hover:bg-yellow-400"><i
+                                        class="fas fa-edit"></i> Editar</button>
+                                <button
+                                    class="btn-delete bg-red-600 text-white px-3 py-1 text-sm rounded-md transition hover:bg-red-500"><i
+                                        class="fas fa-trash"></i> Excluir</button>
+                            </td>
+                        </tr>
+                        <tr class="hover:bg-gray-700" data-id="p_1002" data-desc="">
+                            <td class="px-4 py-4 whitespace-nowrap">
+                                <img src="https://placehold.co/60x60/374151/FFFFFF?text=MD" alt="Sega Mega Drive"
+                                    class="table-img">
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap">Sega Mega Drive</td>
+                            <td class="px-4 py-4 whitespace-nowrap">R$ 449,00</td>
+                            <td class="px-4 py-4 whitespace-nowrap text-center">
+                                <button
+                                    class="btn-edit bg-yellow-500 text-black px-3 py-1 text-sm rounded-md mr-2 transition hover:bg-yellow-400"><i
+                                        class="fas fa-edit"></i> Editar</button>
+                                <button
+                                    class="btn-delete bg-red-600 text-white px-3 py-1 text-sm rounded-md transition hover:bg-red-500"><i
+                                        class="fas fa-trash"></i> Excluir</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
 
-// Funções de ação
-function adicionarProduto(){
-    const nome = prompt("Nome do produto:");
-    const preco = prompt("Preço do produto:");
-    const img = prompt("URL da imagem:");
-    if(nome && preco && img){
-        produtos.push({nome, preco, img});
-        atualizarTabelaProdutos();
-    }
-}
-function editarProduto(i){
-    const nome = prompt("Editar nome:", produtos[i].nome);
-    const preco = prompt("Editar preço:", produtos[i].preco);
-    const img = prompt("Editar URL da imagem:", produtos[i].img);
-    if(nome && preco && img){
-        produtos[i] = {nome, preco, img};
-        atualizarTabelaProdutos();
-    }
-}
-function excluirProduto(i){
-    if(confirm("Deseja realmente excluir este produto?")){
-        produtos.splice(i,1);
-        atualizarTabelaProdutos();
-    }
-}
+        <section>
+            <h2 class="text-2xl font-semibold text-highlight-secondary mb-4">Vendas Recebidas</h2>
+            <div class="overflow-x-auto rounded-lg shadow-xl">
+                <table class="min-w-full divide-y divide-gray-700 admin-table">
+                    <thead>
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs tracking-wider rounded-tl-lg">Nome</th>
+                            <th class="px-4 py-3 text-left text-xs tracking-wider">Telefone</th>
+                            <th class="px-4 py-3 text-left text-xs tracking-wider">Email</th>
+                            <th class="px-4 py-3 text-left text-xs tracking-wider">Descrição</th>
+                            <th class="px-4 py-3 text-center text-xs tracking-wider">Foto</th>
+                            <th class="px-4 py-3 text-center text-xs tracking-wider rounded-tr-lg">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-700 bg-gray-800">
+                        <tr class="hover:bg-gray-700">
+                            <td class="px-4 py-4 whitespace-nowrap">João Silva</td>
+                            <td class="px-4 py-4 whitespace-nowrap">(38) 99990-0000</td>
+                            <td class="px-4 py-4 whitespace-nowrap">joao@email.com</td>
+                            <td class="px-4 py-4 whitespace-nowrap">NES em bom estado</td>
+                            <td class="px-4 py-4 whitespace-nowrap text-center">
+                                <img src="https://placehold.co/60x60/374151/FFFFFF?text=NES" alt="NES venda"
+                                    class="table-img mx-auto">
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap text-center">
+                                <button
+                                    class="btn-edit bg-yellow-500 text-black px-3 py-1 text-sm rounded-md mr-2 transition hover:bg-yellow-400"><i
+                                        class="fas fa-edit"></i> Editar</button>
+                                <button
+                                    class="btn-delete bg-red-600 text-white px-3 py-1 text-sm rounded-md transition hover:bg-red-500"><i
+                                        class="fas fa-trash"></i> Excluir</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
 
-function editarVenda(i){
-    const nome = prompt("Editar nome:", vendas[i].nome);
-    const telefone = prompt("Editar telefone:", vendas[i].telefone);
-    const email = prompt("Editar email:", vendas[i].email);
-    const descricao = prompt("Editar descrição:", vendas[i].descricao);
-    const foto = prompt("Editar URL da foto:", vendas[i].foto);
-    if(nome && telefone && email && descricao && foto){
-        vendas[i] = {nome, telefone, email, descricao, foto};
-        atualizarTabelaVendas();
-    }
-}
+        <div id="productModal" class="modal-overlay fixed inset-0 hidden items-center justify-center p-4">
+            <div class="modal-content w-full max-w-lg p-6 rounded-xl">
+                <h3 id="modalTitle" class="text-2xl font-bold mb-6 text-highlight-main border-b border-gray-600 pb-2">
+                    Adicionar Novo Produto</h3>
 
-function excluirVenda(i){
-    if(confirm("Deseja realmente excluir esta venda?")){
-        vendas.splice(i,1);
-        atualizarTabelaVendas();
-    }
-}
+                <form id="productForm">
+                    <div class="mb-4">
+                        <label for="productName" class="block text-sm font-medium mb-1 text-gray-300">Nome do
+                            Produto*</label>
+                        <input type="text" id="productName" name="productName" required
+                            class="w-full p-2 rounded-lg focus:outline-none">
+                    </div>
+                    <div class="mb-4">
+                        <label for="productPrice" class="block text-sm font-medium mb-1 text-gray-300">Preço
+                            (R$)*</label>
+                        <input type="number" step="0.01" id="productPrice" name="productPrice" required
+                            class="w-full p-2 rounded-lg focus:outline-none">
+                    </div>
+                    <div class="mb-4">
+                        <label for="productImage" class="block text-sm font-medium mb-1 text-gray-300">URL da
+                            Imagem</label>
+                        <input type="url" id="productImage" name="productImage"
+                            class="w-full p-2 rounded-lg focus:outline-none"
+                            placeholder="Ex: https://link.para/imagem.jpg">
+                    </div>
+                    <div class="mb-6">
+                        <label for="productDesc" class="block text-sm font-medium mb-1 text-gray-300">Descrição</label>
+                        <textarea id="productDesc" name="productDesc" rows="3"
+                            class="w-full p-2 rounded-lg focus:outline-none"></textarea>
+                    </div>
 
-// Inicializa tabelas
-atualizarTabelaProdutos();
-atualizarTabelaVendas();
-</script>
+                    <div class="flex justify-end space-x-4">
+                        <button type="button" id="cancelBtn"
+                            class="bg-gray-500 text-white px-4 py-2 rounded-lg transition hover:bg-gray-400">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="add-btn px-4 py-2 rounded-lg">
+                            <i class="fas fa-save mr-2"></i> Salvar Produto
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
 
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        // Importa as funções do Firestore necessárias: getFirestore e addDoc para adicionar
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+
+        // Configurações do Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyDbz1SwXKXnZ7LFOro0RDSaW_iM8YczqWA",
+            authDomain: "trabalhofinal-749d9.firebaseapp.com",
+            projectId: "trabalhofinal-749d9",
+            storageBucket: "trabalhofinal-749d9.firebasestorage.app",
+            messagingSenderId: "410380757184",
+            appId: "1:410380757184:web:74da97895957b874a6a525",
+            measurementId: "G-M92W9ZDLS0"
+        };
+
+        // Inicializa o Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app); // Inicializa o Firestore
+
+        // Referências do DOM
+        const accountNameSpan = document.getElementById('accountName');
+        const signOutLink = document.getElementById('signOutLink');
+        const productModal = document.getElementById('productModal');
+        const addProductBtn = document.getElementById('addProductBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const toast = document.getElementById('toast');
+        const productForm = document.getElementById('productForm');
+
+        // ------------------------------------------------------------------
+        // FUNÇÕES DE UTILIDADE
+        // ------------------------------------------------------------------
+
+        function showToast(message, type = 'success') {
+            toast.classList.remove('bg-green-600', 'bg-red-600');
+
+            if (type === 'success') {
+                toast.classList.add('bg-green-600');
+            } else {
+                toast.classList.add('bg-red-600');
+            }
+
+            toast.textContent = message;
+            toast.classList.remove('hidden');
+
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+
+        const openModal = () => {
+            productModal.classList.remove('hidden');
+            productModal.classList.add('flex');
+            productForm.reset();
+        };
+
+        const closeModal = () => {
+            productModal.classList.add('hidden');
+            productModal.classList.remove('flex');
+        };
+
+        function reloadProductList() {
+            console.log("A lista de produtos seria recarregada aqui...");
+        }
+
+        // ------------------------------------------------------------------
+        // LÓGICA DO PAINEL
+        // ------------------------------------------------------------------
+
+        // Observa mudanças no estado de autenticação (MANTIDO)
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                const userId = user.uid;
+                const userName = user.email ? user.email.split('@')[0] : `ID: ${userId.substring(0, 8)}...`;
+                accountNameSpan.textContent = userName;
+                console.log(`Usuário logado. UID: ${userId}`);
+            } else {
+                // Lógica de Segurança: Redireciona se não estiver logado.
+                // Isso evita que usuários deslogados permaneçam no painel.
+                console.log("Nenhum usuário logado. Redirecionando para login.");
+                window.location.href = 'login.html';
+            }
+        });
+
+        // Evento de Sair (AJUSTADO)
+        signOutLink.addEventListener('click', async (e) => {
+            e.preventDefault();
+
+            try {
+                await signOut(auth);
+
+                // 1. Exibe o feedback de sucesso
+                showToast("Você saiu com sucesso! Redirecionando para a Home...", 'success');
+
+                // 2. Redireciona IMEDIATAMENTE após o logout ser concluído.
+                // Isso sobrescreve a lógica de segurança do onAuthStateChanged.
+                window.location.href = 'index.html';
+
+            } catch (error) {
+                console.error("Erro ao sair:", error);
+                showToast("Erro ao tentar sair.", 'error');
+            }
+        });
+
+        // Eventos do Modal (MANTIDOS)
+        addProductBtn.addEventListener('click', openModal);
+        cancelBtn.addEventListener('click', closeModal);
+        productModal.addEventListener('click', (e) => {
+            if (e.target === productModal) {
+                closeModal();
+            }
+        });
+
+        // Submissão do Formulário de Produto (MANTIDO)
+        productForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const data = {
+                name: productForm.productName.value,
+                price: parseFloat(productForm.productPrice.value),
+                imageUrl: productForm.productImage.value,
+                description: productForm.productDesc.value,
+                createdAt: new Date(),
+            };
+
+            try {
+                const docRef = await addDoc(collection(db, "products"), data);
+
+                showToast("Produto adicionado com sucesso!", 'success');
+                console.log("Documento escrito com ID: ", docRef.id);
+
+                closeModal();
+                productForm.reset();
+                reloadProductList();
+
+            } catch (error) {
+                console.error("Erro ao adicionar produto: ", error);
+                showToast("Erro ao salvar o produto. Verifique as regras do Firestore.", 'error');
+            }
+        });
+
+    </script>
 </body>
+
 </html>

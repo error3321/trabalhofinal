@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrar ou Cadastrar | RetroPoint</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link href="https://fonts2.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/estilo.css">
+</head>
+
+<body class="login-page">
+    <div class="login-container">
+
+        <div class="logo-login">
+            <a href="index.html">
+                <i class="fa-solid fa-gamepad" aria-label="RetroPoint Logo"></i>
+            </a>
+        </div>
+
+        <h1>
+            Insira seus dados para entrar ou criar sua conta
+        </h1>
+
+        <div class="country-selector">
+            Brasil
+        </div>
+
+        <form id="loginForm" action="#" method="post">
+            <div class="input-group">
+                <input type="email" id="email" name="email" placeholder="E-mail" required>
+            </div>
+
+            <div class="input-group">
+                <input type="password" id="password" name="password" placeholder="Senha" required>
+            </div>
+
+            <a href="#" class="forgot-password">Esqueceu sua senha?</a>
+
+            <div class="legal-text">
+                Ao continuar, afirmo que concordo com a
+                <a href="#">Política de privacidade</a> e os
+                <a href="#">Termos de uso</a> da RetroPoint.
+            </div>
+
+            <button type="submit" id="continueBtn" class="btn-continue">
+                Continuar
+            </button>
+        </form>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { 
+            getAuth, 
+            signInWithEmailAndPassword, 
+            setPersistence, 
+            browserLocalPersistence,
+            onAuthStateChanged
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        
+        // IMPORTS DO FIRESTORE (BANCO DE DADOS)
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Seus dados de configuração do Firebase (reutilizados)
+        const firebaseConfig = {
+            apiKey: "AIzaSyDbz1SwXKXnZ7LFOro0RDSaW_iM8YczqWA",
+            authDomain: "trabalhofinal-749d9.firebaseapp.com",
+            projectId: "trabalhofinal-749d9",
+            storageBucket: "trabalhofinal-749d9.firebasestorage.app",
+            messagingSenderId: "410380757184",
+            appId: "1:410380757184:web:74da97895957b874a6a525",
+            measurementId: "G-M92W9ZDLS0"
+        };
+
+        // Inicializa o Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app); // Inicializa o Firestore
+
+        // Referências do DOM
+        const loginForm = document.getElementById('loginForm');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+
+        // Função de redirecionamento para o Painel
+        const redirectToPainel = () => {
+            window.location.href = 'admin/painel.html'; 
+        };
+        
+        // Função de redirecionamento para a Home (ou página de cliente)
+        const redirectToHome = () => {
+            // Se o usuário logou, mas não é admin, enviamos para a página principal
+            window.location.href = 'index.html'; 
+        };
+
+        // ----------------------------------------------------------------------
+        // FUNÇÃO CENTRAL: VERIFICA SE O USUÁRIO TEM O PAPEL DE ADMIN
+        // ----------------------------------------------------------------------
+        /**
+         * Verifica o papel do usuário no Firestore e redireciona se for admin.
+         * @param {Object} user O objeto user do Firebase Auth.
+         * @returns {boolean} Retorna true se for admin e o redirecionamento foi iniciado.
+         */
+        async function checkAdminAndRedirect(user) {
+            if (user) {
+                const userDocRef = doc(db, "users", user.uid);
+                
+                try {
+                    const userDoc = await getDoc(userDocRef);
+                    
+                    if (userDoc.exists()) {
+                        const userData = userDoc.data();
+                        
+                        // Verifica se o campo 'role' é 'admin'
+                        if (userData.role === 'admin') {
+                            console.log("Usuário é ADMIN. Redirecionando para o painel.");
+                            redirectToPainel();
+                            return true; // É admin
+                        }
+                    } 
+                } catch (error) {
+                    console.error("Erro ao buscar dados do Firestore:", error);
+                }
+            }
+            
+            // Se não for encontrado ou não for admin:
+            console.log("Usuário não é ADMIN ou dados não encontrados.");
+            return false;
+        }
+
+        // ----------------------------------------------------------------------
+        // 1. VERIFICAÇÃO INICIAL (Ao carregar a página)
+        // Mantemos essa verificação para o caso de o usuário já estar logado.
+        // ----------------------------------------------------------------------
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                // Se o usuário já está logado, verificamos se ele é admin.
+                const isAdmin = await checkAdminAndRedirect(user); 
+                
+                // Se não for admin, mas já tem uma sessão, redirecionamos para home para evitar loop de login.
+                if (!isAdmin && window.location.pathname.endsWith('login.html')) {
+                    redirectToHome();
+                }
+            }
+        });
+
+
+        // ----------------------------------------------------------------------
+        // 2. FUNÇÃO DE LOGIN (Ao submeter o formulário)
+        // Esta é a função que lida com o clique em "Continuar".
+        // ----------------------------------------------------------------------
+        async function handleLogin(e) {
+            e.preventDefault(); 
+            
+            const email = emailInput.value;
+            const password = passwordInput.value;
+            
+            if (!email || !password) {
+                 alert("Por favor, preencha E-mail e Senha.");
+                 return;
+            }
+
+            try {
+                // Configura a persistência para 'browserLocalPersistence' (manter logado)
+                await setPersistence(auth, browserLocalPersistence);
+
+                // Realiza o login com E-mail e Senha
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                
+                const user = userCredential.user;
+                
+                // Após o login, verifica se é admin. A função já tenta redirecionar se for.
+                const isAdmin = await checkAdminAndRedirect(user);
+                
+                // 🛑 LÓGICA ADICIONADA/REFORÇADA: Se o login foi um sucesso (try block)
+                // mas a função de checagem de admin retornou false (não-admin)
+                if (!isAdmin) {
+                    alert("Login de cliente bem-sucedido. Redirecionando para a página principal.");
+                    redirectToHome(); // Redireciona para a home
+                }
+
+            } catch (error) {
+                // Tratamento de erro de autenticação
+                console.error("Erro de Login:", error.code, error.message);
+                
+                let errorMessage = "Erro no login. Verifique seu e-mail e senha.";
+
+                if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+                    errorMessage = "E-mail ou senha inválidos. Tente novamente.";
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMessage = "O formato do e-mail é inválido.";
+                }
+                
+                alert(errorMessage);
+            }
+        }
+
+        // Adiciona o listener para o envio do formulário
+        loginForm.addEventListener('submit', handleLogin);
+    </script>
+</body>
+
+</html>
