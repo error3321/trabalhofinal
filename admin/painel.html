@@ -101,6 +101,23 @@
 <div id="toast" class="fixed bottom-6 right-6 px-4 py-3 rounded-xl text-white font-semibold shadow-xl
             bg-green-600 hidden transition-all duration-300">
 </div>
+<div id="confirmSignOutModal" class="fixed inset-0 hidden items-center justify-center z-50 p-4"
+    style="background-color: rgba(0, 0, 0, 0.7); backdrop-filter: blur(3px);">
+    <div class="bg-gray-800 p-8 rounded-xl w-full max-w-sm text-center shadow-2xl">
+        <h3 class="text-2xl font-bold mb-4 text-white">Deseja sair?</h3>
+        <p class="text-gray-400 mb-8">Clique em confirmar para encerrar sua sessão.</p>
+
+        <div class="flex justify-end space-x-4">
+            <button id="cancelSignOutBtn" class="px-4 py-2 rounded-lg text-gray-400 hover:text-white transition">
+                Cancelar
+            </button>
+            <button id="confirmSignOutBtn"
+                class="bg-red-600 text-white px-4 py-2 rounded-lg transition hover:bg-red-500 font-semibold">
+                Confirmar saída
+            </button>
+        </div>
+    </div>
+</div>
 
 <body class="p-4 sm:p-8">
 
@@ -295,6 +312,11 @@
         const toast = document.getElementById('toast');
         const productForm = document.getElementById('productForm');
 
+        // NOVAS REFERÊNCIAS PARA O MODAL DE SAÍDA
+        const confirmSignOutModal = document.getElementById('confirmSignOutModal');
+        const cancelSignOutBtn = document.getElementById('cancelSignOutBtn');
+        const confirmSignOutBtn = document.getElementById('confirmSignOutBtn');
+
         // ------------------------------------------------------------------
         // FUNÇÕES DE UTILIDADE
         // ------------------------------------------------------------------
@@ -331,6 +353,21 @@
             console.log("A lista de produtos seria recarregada aqui...");
         }
 
+        // NOVA FUNÇÃO: Lógica de logout isolada
+        async function performSignOut() {
+            try {
+                await signOut(auth);
+
+                showToast("Você saiu com sucesso! Redirecionando para a Home...", 'success');
+
+                window.location.href = '../index.html'; // Corrigi para ../index.html, assumindo que painel está em subpasta.
+
+            } catch (error) {
+                console.error("Erro ao sair:", error);
+                showToast("Erro ao tentar sair.", 'error');
+            }
+        }
+
         // ------------------------------------------------------------------
         // LÓGICA DO PAINEL
         // ------------------------------------------------------------------
@@ -346,29 +383,37 @@
                 // Lógica de Segurança: Redireciona se não estiver logado.
                 // Isso evita que usuários deslogados permaneçam no painel.
                 console.log("Nenhum usuário logado. Redirecionando para login.");
-                window.location.href = "../login.html";
+                window.location.href = '../login.html';
             }
         });
 
-        // Evento de Sair (AJUSTADO)
-        signOutLink.addEventListener('click', async (e) => {
-            e.preventDefault();
+        // ------------------------------------------------------------------
+        // LÓGICA DO MODAL DE SAÍDA
+        // ------------------------------------------------------------------
 
-            try {
-                await signOut(auth);
-
-                // 1. Exibe o feedback de sucesso
-                showToast("Você saiu com sucesso! Redirecionando para a Home...", 'success');
-
-                // 2. Redireciona IMEDIATAMENTE após o logout ser concluído.
-                // Isso sobrescreve a lógica de segurança do onAuthStateChanged.
-                window.location.href = 'index.html';
-
-            } catch (error) {
-                console.error("Erro ao sair:", error);
-                showToast("Erro ao tentar sair.", 'error');
-            }
+        // 1. Evento de Sair (AGORA APENAS ABRE O MODAL)
+        signOutLink.addEventListener('click', (e) => {
+            e.preventDefault(); // Impede o logout imediato
+            confirmSignOutModal.classList.remove('hidden');
+            confirmSignOutModal.classList.add('flex');
         });
+
+        // 2. Evento para CANCELAR a Saída (Fecha o modal)
+        cancelSignOutBtn.addEventListener('click', () => {
+            confirmSignOutModal.classList.add('hidden');
+            confirmSignOutModal.classList.remove('flex');
+        });
+
+        // 3. Evento para CONFIRMAR a Saída (Fecha o modal e faz o logout)
+        confirmSignOutBtn.addEventListener('click', () => {
+            confirmSignOutModal.classList.add('hidden');
+            confirmSignOutModal.classList.remove('flex');
+            performSignOut(); // Chama a função de logout real
+        });
+
+
+        // Eventos do Modal (MANTIDOS)
+        // ... (continue com os eventos do modal de produto)
 
         // Eventos do Modal (MANTIDOS)
         addProductBtn.addEventListener('click', openModal);

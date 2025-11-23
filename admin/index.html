@@ -40,12 +40,7 @@ function entrar(e){
     e.preventDefault(); // impede envio do formulário
     // aqui você poderia validar usuário e senha futuramente
     window.location.href = "./painel.html"; // redireciona para o painel JS
-} else {
-                // Lógica de Segurança: Redireciona se não estiver logado.
-                // Isso evita que usuários deslogados permaneçam no painel.
-                console.log("Nenhum usuário logado. Redirecionando para login.");
-                window.location.href = "../login.html";
-            }
+}
 </script>
         </div>
     </section>
