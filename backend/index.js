@@ -7,7 +7,7 @@ import { pool } from './db';
 
 dotenv.config();
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5501;
 const JWT_SECRET = process.env.JWT_SECRET;
 
 app.use(cors());

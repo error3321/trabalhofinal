@@ -99,7 +99,7 @@ app.post("/products/add", authenticateToken, async (req, res) => {
     }
 });
 
-app.listen(3000, () => console.log("Backend rodando na porta 3000"));
+app.listen(5501, () => console.log("Backend rodando na porta 5501"));
 
 // ----------------------------------------------
 // LISTAR PRODUTOS
