@@ -1,4 +1,11 @@
 {
+  "name": "trabalhofinal",
+  "version": "1.0.0",
+  "main": "auth.js",
+  "type": "module",
+  "scripts": {
+    "start": "node auth.js"
+  },
   "dependencies": {
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",

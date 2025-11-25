@@ -1,11 +1,12 @@
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 CREATE TABLE IF NOT EXISTS usuario (
-    id_usuario INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_usuario SERIAL PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
-    email VARCHAR(120) NOT NULL UNIQUE,
+    email VARCHAR(150) UNIQUE NOT NULL,
     senha TEXT NOT NULL,
-    criado_em TIMESTAMPTZ DEFAULT NOW()
+    role VARCHAR(20) DEFAULT 'user', -- 'user' ou 'admin'
+    criado_em TIMESTAMP DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS produto (

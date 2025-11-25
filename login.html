@@ -2,8 +2,8 @@
 <html lang="pt-BR">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Entrar ou Cadastrar | RetroPoint</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link href="https://fonts2.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
@@ -12,101 +12,146 @@
 
 <body class="login-page">
     <div class="login-container">
-
-        <div class="logo-login">
-            <a href="index.html">
-                <i class="fa-solid fa-gamepad" aria-label="RetroPoint Logo"></i>
-            </a>
-        </div>
-
-        <h1>
-            Insira seus dados para entrar ou criar sua conta
-        </h1>
-
-        <div class="country-selector">
-            Brasil
-        </div>
+        <div class="logo-login"><a href="index.html"><i class="fa-solid fa-gamepad"
+                    aria-label="RetroPoint Logo"></i></a></div>
+        <h1>Insira seus dados para entrar ou criar sua conta</h1>
+        <div class="country-selector">Brasil</div>
 
         <form id="loginForm">
-            <div class="input-group">
-                <input type="email" id="email" name="email" placeholder="E-mail" required>
+            <div class="input-group"><input type="email" id="email" name="email" placeholder="E-mail" required></div>
+            <div class="input-group"><input type="password" id="password" name="password" placeholder="Senha" required>
             </div>
-
-            <div class="input-group">
-                <input type="password" id="password" name="password" placeholder="Senha" required>
-            </div>
-
             <a href="#" class="forgot-password">Esqueceu sua senha?</a>
-
-            <div class="legal-text">
-                Ao continuar, afirmo que concordo com a
-                <a href="#">Política de privacidade</a> e os
+            <div class="legal-text">Ao continuar, afirmo que concordo com a <a href="#">Política de privacidade</a> e os
                 <a href="#">Termos de uso</a> da RetroPoint.
             </div>
-
-            <button type="submit" id="continueBtn" class="btn-continue">
-                Continuar
-            </button>
+            <button type="submit" id="continueBtn" class="btn-continue">Continuar</button>
         </form>
     </div>
 
     <script>
+        /*
+          Estratégia:
+          - API_OVERRIDE: se você estiver testando com ngrok coloque a URL aqui (ex: "https://abcd-5501.ngrok.io")
+          - Detecta localhost automaticamente
+          - Tenta 2 portas locais comuns (5501, 3000) antes de falhar
+        */
+        const API_OVERRIDE = "https://super-space-pancake-wrj6wv5g555259jq-5501.app.github.dev/"; // <-- se usar ngrok coloque a string: "https://abcd-5501.ngrok.io"
+        const LOCAL_PORTS_TO_TRY = [5501, 3000];
+
+        function detectApiBase() {
+            if (API_OVERRIDE) return API_OVERRIDE;
+            if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+                // estamos local — usar a primeira porta no array
+                return `http://localhost:${LOCAL_PORTS_TO_TRY[0]}`;
+            }
+            // produção: substitua pela URL do backend deployado quando for definitiva
+            return "https://SEU_BACKEND_PUBLICO.example.com";
+        }
+
+        let API_BASE = detectApiBase();
+
         const loginForm = document.getElementById("loginForm");
         const emailInput = document.getElementById("email");
         const passwordInput = document.getElementById("password");
-
         const redirectToPainel = () => window.location.href = 'admin/painel.html';
         const redirectToHome = () => window.location.href = 'index.html';
 
+        async function tryFetchWithFallbacks(urls, fetchOptions) {
+            // tenta sequencialmente as urls até obter sucesso de conexão (fetch não rejeitar com network error)
+            for (const url of urls) {
+                try {
+                    const res = await fetch(url, fetchOptions);
+                    // se chegou aqui, a conexão foi feita (pode ser 4xx/5xx, mas não connection-refused)
+                    return res;
+                } catch (err) {
+                    // erro de rede — tentar próxima URL
+                    console.warn(`Falha ao conectar em ${url}:`, err);
+                }
+            }
+            // todas falharam
+            throw new Error("Todas as tentativas de conexão falharam (network error).");
+        }
+
         async function handleLogin(e) {
             e.preventDefault();
-
             const email = emailInput.value.trim();
             const password = passwordInput.value.trim();
+            if (!email || !password) { alert("Preencha e-mail e senha."); return; }
 
-            if (!email || !password) {
-                alert("Preencha e-mail e senha.");
+            // montar lista de endpoints a tentar
+            const endpoints = [];
+            if (API_OVERRIDE) endpoints.push(`${API_OVERRIDE}/login`);
+            if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+                // tenta as portas locais definidas
+                for (const p of LOCAL_PORTS_TO_TRY) endpoints.push(`http://localhost:${p}/login`);
+            }
+            // sempre inclui a base "produção" (pode falhar se você não tiver deploy)
+            const prodBase = (API_BASE && !API_OVERRIDE && !(location.hostname === "localhost")) ? API_BASE : null;
+            if (prodBase) endpoints.push(`${prodBase}/login`);
+
+            if (!endpoints.length) {
+                alert("Nenhum endpoint configurado. Edite API_BASE ou API_OVERRIDE no código.");
                 return;
             }
 
+            const options = {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password })
+            };
+
             try {
-                const response = await fetch("http://localhost:3000/login", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ email, password })
-                });
-
-                const data = await response.json();
-
+                const response = await tryFetchWithFallbacks(endpoints, options);
+                // se response é undefined cai no catch
+                const data = await response.json().catch(() => ({}));
                 if (response.ok && data.token) {
-                    // Armazena token no localStorage
+                    // CÓDIGO COM DEBUG - Mantenha este código por enquanto
+                    // ...
                     localStorage.setItem("token", data.token);
 
-                    // Redireciona conforme o papel do usuário
-                    if (data.role === "admin") {
-                        redirectToPainel();
-                    } else {
-                        redirectToHome();
-                    }
-                } else {
-                    alert(data.message || "Erro ao fazer login. Verifique suas credenciais.");
-                }
+                    console.log("Token recebido:", data.token); // DEBUG 1
 
+                    try {
+                        const payload = JSON.parse(atob(data.token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+
+                        console.log("Payload decodificado:", payload); // DEBUG 2
+                        console.log("Role do usuário:", payload.role); // DEBUG 3
+
+                        if (payload.role === 'admin') {
+                            console.log("SUCESSO: Redirecionando para Painel Admin."); // DEBUG 4
+                            return redirectToPainel();
+                        }
+                    } catch (e) {
+                        console.error("Erro ao decodificar token:", e); // DEBUG 5
+                    }
+
+                    console.log("ATENÇÃO: Redirecionando para Home (role não é admin)."); // DEBUG 6
+                    return redirectToHome();
+                    // ...
+                    return redirectToHome();
+                } else {
+                    // exibe mensagem retornada pelo backend ou fallback
+                    alert(data.message || data.error || "Erro ao fazer login. Verifique credenciais.");
+                }
             } catch (err) {
-                console.error("Erro de rede:", err);
-                alert("Erro de rede. Tente novamente mais tarde.");
+                console.error("Erro de rede (todas as tentativas):", err);
+                alert("Erro de rede. Não foi possível conectar ao backend. Verifique se o servidor está rodando (localhost) ou use ngrok/URL pública.");
             }
         }
 
         loginForm.addEventListener("submit", handleLogin);
 
-        // Proteção: se já estiver logado, redireciona
+        // se já tiver token -> decodifica e redireciona conforme role
         window.addEventListener("DOMContentLoaded", () => {
             const token = localStorage.getItem("token");
-            if (token) {
-                // Aqui você poderia decodificar o JWT e redirecionar conforme role
-                // Para simplificar, envia para home
-                redirectToHome();
+            if (!token) return;
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+                if (payload.role === 'admin') redirectToPainel();
+                else redirectToHome();
+            } catch (_) {
+                // token inválido -> ignora
             }
         });
     </script>

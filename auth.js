@@ -3,6 +3,7 @@ import cors from "cors";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import pkg from "pg";
+import 'dotenv/config';
 
 const { Pool } = pkg;
 
@@ -10,9 +11,18 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+// Use DATABASE_URL (Neon) vindo do ambiente em produção
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL ?? "postgresql://user:senha@seu-endpoint.neon.tech/db?sslmode=require"
+    connectionString:
+        process.env.DATABASE_URL ??
+        "postgresql://neondb_owner:npg_Cd90rbIFsYLo@ep-cold-heart-acoeyh2v-pooler.sa-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
 });
+
+// JWT secret via env (MUDANÇA: Renomeado para SECRET)
+const SECRET = process.env.JWT_SECRET || "chave-secreta-dev";
+
+// Porta via env (obrigatório em provedores)
+const PORT = process.env.PORT || 5501;
 
 // ----------------------------------------------
 // Middleware para validar token JWT
@@ -21,11 +31,16 @@ function authenticateToken(req, res, next) {
     const authHeader = req.headers["authorization"];
     const token = authHeader && authHeader.split(" ")[1];
 
-    if (!token) return res.sendStatus(401);
+    if (!token) {
+        return res.status(401).json({ message: "Token não fornecido" });
+    }
 
-    jwt.verify(token, "chave-secreta", (err, user) => {
-        if (err) return res.sendStatus(403);
-        req.user = user;
+    // USO DA NOVA VARIÁVEL 'SECRET'
+    jwt.verify(token, SECRET, (err, payload) => {
+        if (err) {
+            return res.status(403).json({ message: "Token inválido ou expirado" });
+        }
+        req.user = payload; // contém id, email, role
         next();
     });
 }
@@ -36,16 +51,22 @@ function authenticateToken(req, res, next) {
 app.post("/register", async (req, res) => {
     const { email, password } = req.body;
 
+    if (!email || !password) return res.status(400).json({ message: "Email e senha são obrigatórios" });
+
     const hashed = await bcrypt.hash(password, 10);
 
     try {
-        await pool.query(
-            "INSERT INTO users (email, password_hash) VALUES ($1, $2)",
-            [email, hashed]
-        );
-        res.json({ message: "Conta criada!" });
+        // CORREÇÃO: Coluna 'password_hash' alterada para 'senha'
+        await pool.query("INSERT INTO usuario (email, senha, role) VALUES ($1, $2, $3)", [
+            email,
+            hashed,
+            "user" // default role
+        ]);
+        res.status(201).json({ message: "Conta criada!" });
     } catch (err) {
-        res.status(400).json({ error: "Email já cadastrado" });
+        console.error(err);
+        // Detalhe: constraint de unique no email retorna erro do PG, devolvemos 409
+        res.status(409).json({ message: "Email já cadastrado" });
     }
 });
 
@@ -54,79 +75,95 @@ app.post("/register", async (req, res) => {
 // ----------------------------------------------
 app.post("/login", async (req, res) => {
     const { email, password } = req.body;
+    if (!email || !password) return res.status(400).json({ message: "Email e senha são obrigatórios" });
 
-    const result = await pool.query(
-        "SELECT * FROM users WHERE email = $1",
-        [email]
-    );
+    try {
+        // Selecionamos todas as colunas da tabela 'usuario'
+        const result = await pool.query("SELECT * FROM usuario WHERE email = $1", [email]);
 
-    if (!result.rows.length) {
-        return res.status(401).json({ error: "Usuário não encontrado" });
+        if (!result.rows.length) {
+            return res.status(401).json({ message: "Usuário não encontrado" });
+        }
+
+        const user = result.rows[0];
+
+        // CORREÇÃO: Comparando a senha fornecida com 'user.senha'
+        const match = await bcrypt.compare(password, user.senha);
+
+        if (!match) {
+            return res.status(401).json({ message: "Senha incorreta" });
+        }
+
+        const token = jwt.sign(
+            { id: user.id_usuario, email: user.email, role: user.role ?? 'user' },
+            SECRET,
+            { expiresIn: "2h" }
+        );
+
+
+        res.json({ token });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Erro interno no servidor" });
     }
-
-    const user = result.rows[0];
-    const match = await bcrypt.compare(password, user.password_hash);
-
-    if (!match) {
-        return res.status(401).json({ error: "Senha incorreta" });
-    }
-
-    const token = jwt.sign(
-        { id: user.id, email: user.email },
-        "chave-secreta",
-        { expiresIn: "2h" }
-    );
-
-    res.json({ token });
 });
 
 // ----------------------------------------------
 // ADD PRODUCT — protegido por token
 // ----------------------------------------------
-app.post("/products/add", authenticateToken, async (req, res) => {
+app.post("/produto/add", authenticateToken, async (req, res) => {
+    // opcional: checar role
+    if (req.user.role !== "admin") {
+        return res.status(403).json({ message: "Acesso negado: admin required" });
+    }
+
     const { name, price, imageUrl, description } = req.body;
 
     try {
         await pool.query(
-            "INSERT INTO products (name, price, image_url, description) VALUES ($1, $2, $3, $4)",
+            "INSERT INTO produto (nome, preco, imagem, descricao) VALUES ($1, $2, $3, $4)",
             [name, price, imageUrl, description]
         );
 
-        res.json({ message: "Produto salvo com sucesso!" });
+        res.status(201).json({ message: "Produto salvo com sucesso!" });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: "Erro ao salvar produto." });
+        res.status(500).json({ message: "Erro ao salvar produto." });
     }
 });
-
-app.listen(5501, () => console.log("Backend rodando na porta 5501"));
 
 // ----------------------------------------------
 // LISTAR PRODUTOS
 // ----------------------------------------------
-app.get("/products/list", authenticateToken, async (req, res) => {
+app.get("/produto/list", authenticateToken, async (req, res) => {
     try {
-        const result = await pool.query("SELECT * FROM products ORDER BY id DESC");
+        const result = await pool.query("SELECT * FROM produto ORDER BY id_produto DESC");
         res.json(result.rows);
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: "Erro ao carregar produtos." });
+        res.status(500).json({ message: "Erro ao carregar produtos." });
     }
 });
 
 // ----------------------------------------------
 // EXCLUIR PRODUTO
 // ----------------------------------------------
-app.delete("/products/delete/:id", authenticateToken, async (req, res) => {
+app.delete("/produto/delete/:id", authenticateToken, async (req, res) => {
+    // opcional: checar role
+    if (req.user.role !== "admin") {
+        return res.status(403).json({ message: "Acesso negado: admin required" });
+    }
+
     const productId = req.params.id;
 
     try {
-        await pool.query("DELETE FROM products WHERE id = $1", [productId]);
+        await pool.query("DELETE FROM produto WHERE id_produto = $1", [productId]);
         res.json({ message: "Produto excluído com sucesso!" });
-
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: "Erro ao excluir produto." });
+        res.status(500).json({ message: "Erro ao excluir produto." });
     }
 });
 
+// Inicia o servidor na porta correta (heroku/Render/Netlify functions etc definem PORT)
+app.listen(PORT, () => console.log(`Backend rodando na porta ${PORT}`));

@@ -1,8 +1,9 @@
-INSERT INTO Usuario (nome, email, senha)
+INSERT INTO Usuario (nome, email, senha, role)
 VALUES
-('João Silva', 'joao@gmail.com', crypt('senha123', gen_salt('bf'))),
-('Maria Souza', 'maria@hotmail.com', crypt('minhaSenha', gen_salt('bf'))),
-('Carlos Lima', 'carlos@yahoo.com', crypt('abc123', gen_salt('bf')));
+('João Silva', 'joao@gmail.com', crypt('senha123', gen_salt('bf')), 'user'),
+('Maria Souza', 'maria@hotmail.com', crypt('minhaSenha', gen_salt('bf')), 'user'),
+('Carlos Lima', 'carlos@yahoo.com', crypt('abc123', gen_salt('bf')), 'user');
+('Cristhian', 'cristhianrfernandes@gmail.com', crypt('Cristhi@n23', gen_salt('bf')), 'admin');
 
 INSERT INTO produto (nome, email, descricao, preco, estoque, destaque, data_cadastro, imagem, ativo)
 VALUES
