@@ -280,179 +280,198 @@
 
     </main>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        // Importa as funções do Firestore necessárias: getFirestore e addDoc para adicionar
-        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    <script>
+        // ------------------------------------------
+        // PROTEÇÃO DE LOGIN VIA JWT
+        // ------------------------------------------
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            window.location.href = "login.html";
+        }
+
+        async function carregarUsuario() {
+            try {
+                const response = await fetch("http://localhost:3000/profile", {
+                    headers: { "Authorization": "Bearer " + token }
+                });
+
+                if (response.status !== 200) {
+                    window.location.href = "login.html";
+                    return;
+                }
+
+                const data = await response.json();
+                const email = data.user.email;
+                document.getElementById("accountName").textContent = email.split("@")[0];
+
+            } catch (e) {
+                window.location.href = "login.html";
+            }
+        }
+
+        carregarUsuario();
 
 
-        // Configurações do Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyDbz1SwXKXnZ7LFOro0RDSaW_iM8YczqWA",
-            authDomain: "trabalhofinal-749d9.firebaseapp.com",
-            projectId: "trabalhofinal-749d9",
-            storageBucket: "trabalhofinal-749d9.firebasestorage.app",
-            messagingSenderId: "410380757184",
-            appId: "1:410380757184:web:74da97895957b874a6a525",
-            measurementId: "G-M92W9ZDLS0"
-        };
+        // ------------------------------------------
+        // FUNÇÃO PARA CARREGAR PRODUTOS DO NEON
+        // ------------------------------------------
+        async function carregarProdutos() {
+            const tbody = document.getElementById("productTableBody");
+            tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4">Carregando produtos...</td></tr>`;
 
-        // Inicializa o Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app); // Inicializa o Firestore
+            const response = await fetch("http://localhost:3000/products/list", {
+                headers: { "Authorization": "Bearer " + token }
+            });
 
-        // Referências do DOM
-        const accountNameSpan = document.getElementById('accountName');
-        const signOutLink = document.getElementById('signOutLink');
+            const produtos = await response.json();
+
+            if (!Array.isArray(produtos)) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-red-400">Erro ao carregar produtos.</td></tr>`;
+                return;
+            }
+
+            if (produtos.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4">Nenhum produto cadastrado.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = "";
+
+            produtos.forEach(prod => {
+                tbody.innerHTML += `
+                <tr class="hover:bg-gray-700">
+                    <td class="px-4 py-4 whitespace-nowrap">
+                        <img src="${prod.image_url || 'https://placehold.co/60x60'}" 
+                            class="table-img" alt="${prod.name}">
+                    </td>
+                    <td class="px-4 py-4 whitespace-nowrap">${prod.name}</td>
+                    <td class="px-4 py-4 whitespace-nowrap">R$ ${Number(prod.price).toFixed(2)}</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-center">
+                        
+                        <button class="btn-edit bg-yellow-500 text-black px-3 py-1 text-sm rounded-md mr-2">
+                            <i class="fas fa-edit"></i> Editar
+                        </button>
+
+                        <button onclick="excluirProduto(${prod.id})"
+                                class="btn-delete bg-red-600 text-white px-3 py-1 text-sm rounded-md">
+                            <i class="fas fa-trash"></i> Excluir
+                        </button>
+
+                    </td>
+                </tr>`;
+            });
+        }
+
+        // Carrega os produtos ao abrir o painel
+        carregarProdutos();
+
+        //-------------------------------------------
+        // Função de excluir produtos
+        //-------------------------------------------
+        async function excluirProduto(id) {
+            if (!confirm("Tem certeza que deseja excluir este produto?")) return;
+
+            const response = await fetch(`http://localhost:3000/products/delete/${id}`, {
+                method: "DELETE",
+                headers: {
+                    "Authorization": "Bearer " + token
+                }
+            });
+
+            const result = await response.json();
+
+            if (result.message) {
+                alert("Produto excluído!");
+                carregarProdutos(); // recarrega a tabela
+            } else {
+                alert("Erro ao excluir produto.");
+            }
+        }
+
+        // ------------------------------------------
+        // SAIR
+        // ------------------------------------------
+        const signOutLink = document.getElementById("signOutLink");
+        const confirmSignOutModal = document.getElementById("confirmSignOutModal");
+        const cancelSignOutBtn = document.getElementById("cancelSignOutBtn");
+        const confirmSignOutBtn = document.getElementById("confirmSignOutBtn");
+
+        signOutLink.addEventListener("click", (e) => {
+            e.preventDefault();
+            confirmSignOutModal.classList.remove("hidden");
+        });
+
+        cancelSignOutBtn.addEventListener("click", () => {
+            confirmSignOutModal.classList.add("hidden");
+        });
+
+        confirmSignOutBtn.addEventListener("click", () => {
+            localStorage.removeItem("token");
+            window.location.href = "login.html";
+        });
+
+
+        // ------------------------------------------
+        // ADICIONAR PRODUTO
+        // ------------------------------------------
         const productModal = document.getElementById('productModal');
         const addProductBtn = document.getElementById('addProductBtn');
         const cancelBtn = document.getElementById('cancelBtn');
-        const toast = document.getElementById('toast');
         const productForm = document.getElementById('productForm');
 
-        // NOVAS REFERÊNCIAS PARA O MODAL DE SAÍDA
-        const confirmSignOutModal = document.getElementById('confirmSignOutModal');
-        const cancelSignOutBtn = document.getElementById('cancelSignOutBtn');
-        const confirmSignOutBtn = document.getElementById('confirmSignOutBtn');
-
-        // ------------------------------------------------------------------
-        // FUNÇÕES DE UTILIDADE
-        // ------------------------------------------------------------------
-
-        function showToast(message, type = 'success') {
-            toast.classList.remove('bg-green-600', 'bg-red-600');
-
-            if (type === 'success') {
-                toast.classList.add('bg-green-600');
-            } else {
-                toast.classList.add('bg-red-600');
-            }
-
-            toast.textContent = message;
-            toast.classList.remove('hidden');
-
-            setTimeout(() => {
-                toast.classList.add('hidden');
-            }, 3000);
+        function openModal() {
+            productModal.classList.remove("hidden");
+            productModal.classList.add("flex");
         }
 
-        const openModal = () => {
-            productModal.classList.remove('hidden');
-            productModal.classList.add('flex');
-            productForm.reset();
-        };
-
-        const closeModal = () => {
-            productModal.classList.add('hidden');
-            productModal.classList.remove('flex');
-        };
-
-        function reloadProductList() {
-            console.log("A lista de produtos seria recarregada aqui...");
+        function closeModal() {
+            productModal.classList.add("hidden");
+            productModal.classList.remove("flex");
         }
 
-        // NOVA FUNÇÃO: Lógica de logout isolada
-        async function performSignOut() {
-            try {
-                await signOut(auth);
+        addProductBtn.addEventListener("click", openModal);
+        cancelBtn.addEventListener("click", closeModal);
 
-                showToast("Você saiu com sucesso! Redirecionando para a Home...", 'success');
-
-                window.location.href = '../index.html'; // Corrigi para ../index.html, assumindo que painel está em subpasta.
-
-            } catch (error) {
-                console.error("Erro ao sair:", error);
-                showToast("Erro ao tentar sair.", 'error');
-            }
-        }
-
-        // ------------------------------------------------------------------
-        // LÓGICA DO PAINEL
-        // ------------------------------------------------------------------
-
-        // Observa mudanças no estado de autenticação (MANTIDO)
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                const userId = user.uid;
-                const userName = user.email ? user.email.split('@')[0] : `ID: ${userId.substring(0, 8)}...`;
-                accountNameSpan.textContent = userName;
-                console.log(`Usuário logado. UID: ${userId}`);
-            } else {
-                // Lógica de Segurança: Redireciona se não estiver logado.
-                // Isso evita que usuários deslogados permaneçam no painel.
-                console.log("Nenhum usuário logado. Redirecionando para login.");
-                window.location.href = '../login.html';
-            }
-        });
-
-        // ------------------------------------------------------------------
-        // LÓGICA DO MODAL DE SAÍDA
-        // ------------------------------------------------------------------
-
-        // 1. Evento de Sair (AGORA APENAS ABRE O MODAL)
-        signOutLink.addEventListener('click', (e) => {
-            e.preventDefault(); // Impede o logout imediato
-            confirmSignOutModal.classList.remove('hidden');
-            confirmSignOutModal.classList.add('flex');
-        });
-
-        // 2. Evento para CANCELAR a Saída (Fecha o modal)
-        cancelSignOutBtn.addEventListener('click', () => {
-            confirmSignOutModal.classList.add('hidden');
-            confirmSignOutModal.classList.remove('flex');
-        });
-
-        // 3. Evento para CONFIRMAR a Saída (Fecha o modal e faz o logout)
-        confirmSignOutBtn.addEventListener('click', () => {
-            confirmSignOutModal.classList.add('hidden');
-            confirmSignOutModal.classList.remove('flex');
-            performSignOut(); // Chama a função de logout real
+        productModal.addEventListener("click", (e) => {
+            if (e.target === productModal) closeModal();
         });
 
 
-        // Eventos do Modal (MANTIDOS)
-        // ... (continue com os eventos do modal de produto)
-
-        // Eventos do Modal (MANTIDOS)
-        addProductBtn.addEventListener('click', openModal);
-        cancelBtn.addEventListener('click', closeModal);
-        productModal.addEventListener('click', (e) => {
-            if (e.target === productModal) {
-                closeModal();
-            }
-        });
-
-        // Submissão do Formulário de Produto (MANTIDO)
-        productForm.addEventListener('submit', async (e) => {
+        // ------------------------------------------
+        // SALVAR PRODUTO NO NEON
+        // ------------------------------------------
+        productForm.addEventListener("submit", async (e) => {
             e.preventDefault();
 
             const data = {
                 name: productForm.productName.value,
                 price: parseFloat(productForm.productPrice.value),
                 imageUrl: productForm.productImage.value,
-                description: productForm.productDesc.value,
-                createdAt: new Date(),
+                description: productForm.productDesc.value
             };
 
-            try {
-                const docRef = await addDoc(collection(db, "products"), data);
+            const response = await fetch("http://localhost:3000/products/add", {
+                method: "POST",
+                headers: {
+                    "Authorization": "Bearer " + token,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            });
 
-                showToast("Produto adicionado com sucesso!", 'success');
-                console.log("Documento escrito com ID: ", docRef.id);
+            const result = await response.json();
 
+            if (result.message) {
+                alert("Produto cadastrado com sucesso!");
                 closeModal();
-                productForm.reset();
-                reloadProductList();
-
-            } catch (error) {
-                console.error("Erro ao adicionar produto: ", error);
-                showToast("Erro ao salvar o produto. Verifique as regras do Firestore.", 'error');
+                carregarProdutos(); // Atualiza tabela após salvar
+            } else {
+                alert("Erro ao salvar produto!");
             }
         });
-
     </script>
+
 </body>
 
 </html>
