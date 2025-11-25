@@ -27,7 +27,7 @@
             Brasil
         </div>
 
-        <form id="loginForm" action="#" method="post">
+        <form id="loginForm">
             <div class="input-group">
                 <input type="email" id="email" name="email" placeholder="E-mail" required>
             </div>
@@ -50,155 +50,65 @@
         </form>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { 
-            getAuth, 
-            signInWithEmailAndPassword, 
-            setPersistence, 
-            browserLocalPersistence,
-            onAuthStateChanged
-        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        
-        // IMPORTS DO FIRESTORE (BANCO DE DADOS)
-        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    <script>
+        const loginForm = document.getElementById("loginForm");
+        const emailInput = document.getElementById("email");
+        const passwordInput = document.getElementById("password");
 
-        // Seus dados de configuração do Firebase (reutilizados)
-        const firebaseConfig = {
-            apiKey: "AIzaSyDbz1SwXKXnZ7LFOro0RDSaW_iM8YczqWA",
-            authDomain: "trabalhofinal-749d9.firebaseapp.com",
-            projectId: "trabalhofinal-749d9",
-            storageBucket: "trabalhofinal-749d9.firebasestorage.app",
-            messagingSenderId: "410380757184",
-            appId: "1:410380757184:web:74da97895957b874a6a525",
-            measurementId: "G-M92W9ZDLS0"
-        };
+        const redirectToPainel = () => window.location.href = 'admin/painel.html';
+        const redirectToHome = () => window.location.href = 'index.html';
 
-        // Inicializa o Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app); // Inicializa o Firestore
-
-        // Referências do DOM
-        const loginForm = document.getElementById('loginForm');
-        const emailInput = document.getElementById('email');
-        const passwordInput = document.getElementById('password');
-
-        // Função de redirecionamento para o Painel
-        const redirectToPainel = () => {
-            window.location.href = 'admin/painel.html'; 
-        };
-        
-        // Função de redirecionamento para a Home (ou página de cliente)
-        const redirectToHome = () => {
-            // Se o usuário logou, mas não é admin, enviamos para a página principal
-            window.location.href = 'index.html'; 
-        };
-
-        // ----------------------------------------------------------------------
-        // FUNÇÃO CENTRAL: VERIFICA SE O USUÁRIO TEM O PAPEL DE ADMIN
-        // ----------------------------------------------------------------------
-        /**
-         * Verifica o papel do usuário no Firestore e redireciona se for admin.
-         * @param {Object} user O objeto user do Firebase Auth.
-         * @returns {boolean} Retorna true se for admin e o redirecionamento foi iniciado.
-         */
-        async function checkAdminAndRedirect(user) {
-            if (user) {
-                const userDocRef = doc(db, "users", user.uid);
-                
-                try {
-                    const userDoc = await getDoc(userDocRef);
-                    
-                    if (userDoc.exists()) {
-                        const userData = userDoc.data();
-                        
-                        // Verifica se o campo 'role' é 'admin'
-                        if (userData.role === 'admin') {
-                            console.log("Usuário é ADMIN. Redirecionando para o painel.");
-                            redirectToPainel();
-                            return true; // É admin
-                        }
-                    } 
-                } catch (error) {
-                    console.error("Erro ao buscar dados do Firestore:", error);
-                }
-            }
-            
-            // Se não for encontrado ou não for admin:
-            console.log("Usuário não é ADMIN ou dados não encontrados.");
-            return false;
-        }
-
-        // ----------------------------------------------------------------------
-        // 1. VERIFICAÇÃO INICIAL (Ao carregar a página)
-        // Mantemos essa verificação para o caso de o usuário já estar logado.
-        // ----------------------------------------------------------------------
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                // Se o usuário já está logado, verificamos se ele é admin.
-                const isAdmin = await checkAdminAndRedirect(user); 
-                
-                // Se não for admin, mas já tem uma sessão, redirecionamos para home para evitar loop de login.
-                if (!isAdmin && window.location.pathname.endsWith('login.html')) {
-                    redirectToHome();
-                }
-            }
-        });
-
-
-        // ----------------------------------------------------------------------
-        // 2. FUNÇÃO DE LOGIN (Ao submeter o formulário)
-        // Esta é a função que lida com o clique em "Continuar".
-        // ----------------------------------------------------------------------
         async function handleLogin(e) {
-            e.preventDefault(); 
-            
-            const email = emailInput.value;
-            const password = passwordInput.value;
-            
+            e.preventDefault();
+
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
+
             if (!email || !password) {
-                 alert("Por favor, preencha E-mail e Senha.");
-                 return;
+                alert("Preencha e-mail e senha.");
+                return;
             }
 
             try {
-                // Configura a persistência para 'browserLocalPersistence' (manter logado)
-                await setPersistence(auth, browserLocalPersistence);
+                const response = await fetch("http://localhost:3000/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, password })
+                });
 
-                // Realiza o login com E-mail e Senha
-                const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                
-                const user = userCredential.user;
-                
-                // Após o login, verifica se é admin. A função já tenta redirecionar se for.
-                const isAdmin = await checkAdminAndRedirect(user);
-                
-                // 🛑 LÓGICA ADICIONADA/REFORÇADA: Se o login foi um sucesso (try block)
-                // mas a função de checagem de admin retornou false (não-admin)
-                if (!isAdmin) {
-                    alert("Login de cliente bem-sucedido. Redirecionando para a página principal.");
-                    redirectToHome(); // Redireciona para a home
+                const data = await response.json();
+
+                if (response.ok && data.token) {
+                    // Armazena token no localStorage
+                    localStorage.setItem("token", data.token);
+
+                    // Redireciona conforme o papel do usuário
+                    if (data.role === "admin") {
+                        redirectToPainel();
+                    } else {
+                        redirectToHome();
+                    }
+                } else {
+                    alert(data.message || "Erro ao fazer login. Verifique suas credenciais.");
                 }
 
-            } catch (error) {
-                // Tratamento de erro de autenticação
-                console.error("Erro de Login:", error.code, error.message);
-                
-                let errorMessage = "Erro no login. Verifique seu e-mail e senha.";
-
-                if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
-                    errorMessage = "E-mail ou senha inválidos. Tente novamente.";
-                } else if (error.code === 'auth/invalid-email') {
-                    errorMessage = "O formato do e-mail é inválido.";
-                }
-                
-                alert(errorMessage);
+            } catch (err) {
+                console.error("Erro de rede:", err);
+                alert("Erro de rede. Tente novamente mais tarde.");
             }
         }
 
-        // Adiciona o listener para o envio do formulário
-        loginForm.addEventListener('submit', handleLogin);
+        loginForm.addEventListener("submit", handleLogin);
+
+        // Proteção: se já estiver logado, redireciona
+        window.addEventListener("DOMContentLoaded", () => {
+            const token = localStorage.getItem("token");
+            if (token) {
+                // Aqui você poderia decodificar o JWT e redirecionar conforme role
+                // Para simplificar, envia para home
+                redirectToHome();
+            }
+        });
     </script>
 </body>
 

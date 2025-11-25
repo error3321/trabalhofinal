@@ -287,7 +287,7 @@
         const token = localStorage.getItem("token");
 
         if (!token) {
-            window.location.href = "login.html";
+            window.location.href = "../login.html"; // Redireciona pra login se não tiver token
         }
 
         async function carregarUsuario() {
@@ -297,7 +297,7 @@
                 });
 
                 if (response.status !== 200) {
-                    window.location.href = "login.html";
+                    window.location.href = "../login.html";
                     return;
                 }
 
@@ -306,11 +306,12 @@
                 document.getElementById("accountName").textContent = email.split("@")[0];
 
             } catch (e) {
-                window.location.href = "login.html";
+                window.location.href = "../login.html";
             }
         }
 
         carregarUsuario();
+
 
 
         // ------------------------------------------
