@@ -30,29 +30,18 @@
     </div>
 
     <script>
-        /*
-          Configure aqui:
-          - API_OVERRIDE: opcional — use só se expôs seu backend com ngrok ou tem a URL pública do deploy.
-            Exemplos:
-              null                          -> usar localhost (quando estiver desenvolvendo)
-              "https://abcd-5501.ngrok.io"  -> ngrok (para testar página hospedada apontando para seu backend local)
-              "https://meu-backend.onrender.com" -> URL do deploy (produção)
-        */
-// coloque exatamente esta linha no topo do script
-        const API_OVERRIDE = "https://super-space-pancake-wrj6wv5g555259jq-5502.app.github.dev";
-        const LOCAL_PORTS_TO_TRY = [5502, 5501, 3000];      // portas locais a tentar
+        /* CONFIG */
+        const API_OVERRIDE = "https://super-space-pancake-wrj6wv5g555259jq-5502.app.github.dev"; // BACKEND público
+        const LOCAL_PORTS_TO_TRY = [5502, 5501, 3000];
 
         function detectApiBase() {
-            if (API_OVERRIDE) return API_OVERRIDE.replace(/\/+$/, ""); // remove slash final
+            if (API_OVERRIDE) return API_OVERRIDE.replace(/\/+$/, "");
             if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
                 return `http://localhost:${LOCAL_PORTS_TO_TRY[0]}`;
             }
-            // Se não colocou API_OVERRIDE e não está em localhost, não temos backend público configurado.
-            // Substitua abaixo pela URL do seu backend quando fizer deploy.
             return null;
         }
-
-        const API_BASE = detectApiBase(); // null se não configurado
+        const API_BASE = detectApiBase();
 
         const loginForm = document.getElementById("loginForm");
         const emailInput = document.getElementById("email");
@@ -60,12 +49,13 @@
         const redirectToPainel = () => window.location.href = 'admin/painel.html';
         const redirectToHome = () => window.location.href = 'index.html';
 
-        // tenta sequencialmente várias URLs até obter resposta de rede (não apenas 4xx/5xx)
+        /* tenta sequencialmente várias URLs até obter resposta de rede (não apenas 4xx/5xx) */
         async function tryFetchWithFallbacks(urls, fetchOptions) {
             for (const url of urls) {
                 try {
+                    console.log("Tentando endpoint:", url);
                     const res = await fetch(url, fetchOptions);
-                    return res; // se chegou aqui, conexão feita (mesmo 401 etc)
+                    return res;
                 } catch (err) {
                     console.warn(`Falha de rede em ${url}:`, err);
                 }
@@ -79,65 +69,87 @@
             const password = passwordInput.value.trim();
             if (!email || !password) { alert("Preencha e-mail e senha."); return; }
 
-            // montar a lista de endpoints a tentar
-            // montar a lista de endpoints a tentar
+            // montar lista de endpoints
             const endpoints = [];
-
-            if (API_OVERRIDE) {
-                endpoints.push(`${API_OVERRIDE.replace(/\/+$/, "")}/login`);
-            }
-
-            // ambiente local
+            if (API_OVERRIDE) endpoints.push(`${API_OVERRIDE.replace(/\/+$/, "")}/login`);
             if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
-                for (const p of LOCAL_PORTS_TO_TRY) {
-                    endpoints.push(`http://localhost:${p}/login`);
-                }
+                for (const p of LOCAL_PORTS_TO_TRY) endpoints.push(`http://localhost:${p}/login`);
             }
-
-            // ambiente hospedado (deploy)
             if (API_BASE && !API_OVERRIDE && !(location.hostname === "localhost")) {
                 endpoints.push(`${API_BASE}/login`);
             }
 
-            // 👇 ADICIONE AQUI: DEBUG IMPORTANTE
             console.log("Endpoints que serão testados:", endpoints);
+            if (!endpoints.length) { alert("Nenhum endpoint configurado."); return; }
+
+            const options = {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Cache-Control": "no-cache",
+                    "Pragma": "no-cache"
+                },
+                cache: "no-store",
+                mode: "cors",
+                body: JSON.stringify({ email, senha: password })
+            };
 
             try {
                 const response = await tryFetchWithFallbacks(endpoints, options);
-                const data = await response.json().catch(() => ({}));
+
+                console.log("Resposta recebida:", response.status, response.statusText);
+                try {
+                    console.log("Response headers:",
+                        "cache-control:", response.headers.get("cache-control"),
+                        "etag:", response.headers.get("etag"),
+                        "vary:", response.headers.get("vary")
+                    );
+                } catch (hErr) {
+                    console.warn("Erro lendo headers:", hErr);
+                }
+
+                const text = await response.text().catch(() => "");
+                console.log("Resposta (texto):", text);
+
+                let data = {};
+                if (text && text.trim() !== "") {
+                    try { data = JSON.parse(text); } catch (e) { console.warn("Resposta não é JSON:", e); data = {}; }
+                }
 
                 if (response.ok && data.token) {
+                    console.log("Token recebido — salvando em localStorage.");
                     localStorage.setItem("token", data.token);
-
-                    // decodifica token para role (se presente)
                     try {
                         const payload = JSON.parse(atob(data.token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
                         if (payload.role === 'admin') return redirectToPainel();
-                    } catch (_) { /* ignora se token não decodificar */ }
-
+                    } catch (_) { }
                     return redirectToHome();
+                }
+
+                if (response.status === 304) {
+                    alert("Resposta 304 (Not Modified). Faça um hard refresh (Ctrl+F5) e tente novamente.");
                 } else {
                     alert(data.message || data.error || `Erro ao fazer login (status ${response.status}).`);
                 }
             } catch (err) {
                 console.error("Erro de rede (todas as tentativas):", err);
-                alert("Erro de rede. Não foi possível conectar ao backend. Verifique se o servidor está rodando (localhost) ou use ngrok/URL pública.");
+                alert("Erro de rede. Não foi possível conectar ao backend.");
             }
         }
 
         loginForm.addEventListener("submit", handleLogin);
 
-        // redirecionamento se já logado
+        // redirect se já logado
         window.addEventListener("DOMContentLoaded", () => {
             const token = localStorage.getItem("token");
             if (!token) return;
             try {
                 const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
-                if (payload.role === 'admin') redirectToPainel();
-                else redirectToHome();
+                if (payload.role === 'admin') redirectToPainel(); else redirectToHome();
             } catch (_) { }
         });
     </script>
+
 </body>
 
 </html>
