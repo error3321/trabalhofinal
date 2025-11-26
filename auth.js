@@ -11,6 +11,11 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+app.use((req, res, next) => {
+  console.log(new Date().toISOString(), req.method, req.url);
+  next();
+});
+
 // Use DATABASE_URL (Neon) vindo do ambiente em produção
 const pool = new Pool({
     connectionString:
@@ -22,7 +27,7 @@ const pool = new Pool({
 const SECRET = process.env.JWT_SECRET || "chave-secreta-dev";
 
 // Porta via env (obrigatório em provedores)
-const PORT = process.env.PORT || 5501;
+const PORT = process.env.PORT || 5502;
 
 // ----------------------------------------------
 // Middleware para validar token JWT
@@ -49,11 +54,11 @@ function authenticateToken(req, res, next) {
 // Criar conta
 // ----------------------------------------------
 app.post("/register", async (req, res) => {
-    const { email, password } = req.body;
+    const { email, senha } = req.body;
 
-    if (!email || !password) return res.status(400).json({ message: "Email e senha são obrigatórios" });
+    if (!email || !senha) return res.status(400).json({ message: "Email e senha são obrigatórios" });
 
-    const hashed = await bcrypt.hash(password, 10);
+    const hashed = await bcrypt.hash(senha, 10);
 
     try {
         // CORREÇÃO: Coluna 'password_hash' alterada para 'senha'
@@ -70,12 +75,11 @@ app.post("/register", async (req, res) => {
     }
 });
 
-// ----------------------------------------------
 // Login
-// ----------------------------------------------
 app.post("/login", async (req, res) => {
-    const { email, password } = req.body;
-    if (!email || !password) return res.status(400).json({ message: "Email e senha são obrigatórios" });
+    console.log("POST /login recebido - body:", req.body);
+    const { email, senha } = req.body;
+    if (!email || !senha) return res.status(400).json({ message: "Email e senha são obrigatórios" });
 
     try {
         // Selecionamos todas as colunas da tabela 'usuario'
@@ -87,8 +91,8 @@ app.post("/login", async (req, res) => {
 
         const user = result.rows[0];
 
-        // CORREÇÃO: Comparando a senha fornecida com 'user.senha'
-        const match = await bcrypt.compare(password, user.senha);
+        // CORREÇÃO: Comparando a senha fornecida com 'user.senha' (que deve ser o hash)
+        const match = await bcrypt.compare(senha, user.senha); // <-- Correto: usa 'user.senha'
 
         if (!match) {
             return res.status(401).json({ message: "Senha incorreta" });
@@ -96,7 +100,7 @@ app.post("/login", async (req, res) => {
 
         const token = jwt.sign(
             { id: user.id_usuario, email: user.email, role: user.role ?? 'user' },
-            SECRET,
+            SECRET, // <-- Uso da variável SECRET
             { expiresIn: "2h" }
         );
 
@@ -166,4 +170,4 @@ app.delete("/produto/delete/:id", authenticateToken, async (req, res) => {
 });
 
 // Inicia o servidor na porta correta (heroku/Render/Netlify functions etc definem PORT)
-app.listen(PORT, () => console.log(`Backend rodando na porta ${PORT}`));
+app.listen(PORT, '0.0.0.0', () => console.log(`Backend rodando na porta ${PORT}`));

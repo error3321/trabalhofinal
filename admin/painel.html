@@ -252,7 +252,7 @@
     </main>
 
     <script>
-        const API_BASE = "https://super-space-pancake-wrj6wv5g555259jq-5501.app.github.dev/"; // Porta correta do backend
+        const API_BASE = "https://super-space-pancake-wrj6wv5g555259jq-5502.app.github.dev";
 
         // ------------------------------------------
         // PROTEÇÃO DE LOGIN VIA JWT (CÓDIGO MODIFICADO)
@@ -439,7 +439,7 @@
                     "Authorization": "Bearer " + token,
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify(data)
+                body: JSON.stringify({email, senha: password})
             });
 
             const result = await response.json();

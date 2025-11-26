@@ -37,7 +37,7 @@ app.post('/login', async (req, res) => {
     if (!email || !password) return res.status(400).json({ message: 'E-mail e senha são obrigatórios' });
 
     try {
-        const result = await pool.query('SELECT * FROM usuarios WHERE email=$1', [email]);
+        const result = await pool.query('SELECT * FROM usuario WHERE email=$1', [email]);
         if (result.rows.length === 0) return res.status(401).json({ message: 'E-mail ou senha inválidos' });
 
         const usuario = result.rows[0];
@@ -63,7 +63,7 @@ app.post('/register', async (req, res) => {
     try {
         const hash = await bcrypt.hash(password, 10);
         const result = await pool.query(
-            'INSERT INTO usuarios(email, password, role) VALUES($1, $2, $3) RETURNING id,email,role',
+            'INSERT INTO usuario(email, password, role) VALUES($1, $2, $3) RETURNING id,email,role',
             [email, hash, role || 'usuario']
         );
 
@@ -79,7 +79,7 @@ app.post('/register', async (req, res) => {
 // -------------------------
 app.get('/profile', authMiddleware, async (req, res) => {
     try {
-        const result = await pool.query('SELECT id,email,role FROM usuarios WHERE id=$1', [req.usuario.id]);
+        const result = await pool.query('SELECT id,email,role FROM usuario WHERE id=$1', [req.usuario.id]);
         if (result.rows.length === 0) return res.status(404).json({ message: 'Usuário não encontrado' });
 
         res.json({ usuario: result.rows[0] });

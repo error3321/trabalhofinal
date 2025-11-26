@@ -31,25 +31,28 @@
 
     <script>
         /*
-          Estratégia:
-          - API_OVERRIDE: se você estiver testando com ngrok coloque a URL aqui (ex: "https://abcd-5501.ngrok.io")
-          - Detecta localhost automaticamente
-          - Tenta 2 portas locais comuns (5501, 3000) antes de falhar
+          Configure aqui:
+          - API_OVERRIDE: opcional — use só se expôs seu backend com ngrok ou tem a URL pública do deploy.
+            Exemplos:
+              null                          -> usar localhost (quando estiver desenvolvendo)
+              "https://abcd-5501.ngrok.io"  -> ngrok (para testar página hospedada apontando para seu backend local)
+              "https://meu-backend.onrender.com" -> URL do deploy (produção)
         */
-        const API_OVERRIDE = "https://super-space-pancake-wrj6wv5g555259jq-5501.app.github.dev/"; // <-- se usar ngrok coloque a string: "https://abcd-5501.ngrok.io"
-        const LOCAL_PORTS_TO_TRY = [5501, 3000];
+// coloque exatamente esta linha no topo do script
+        const API_OVERRIDE = "https://super-space-pancake-wrj6wv5g555259jq-5502.app.github.dev";
+        const LOCAL_PORTS_TO_TRY = [5502, 5501, 3000];      // portas locais a tentar
 
         function detectApiBase() {
-            if (API_OVERRIDE) return API_OVERRIDE;
+            if (API_OVERRIDE) return API_OVERRIDE.replace(/\/+$/, ""); // remove slash final
             if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
-                // estamos local — usar a primeira porta no array
                 return `http://localhost:${LOCAL_PORTS_TO_TRY[0]}`;
             }
-            // produção: substitua pela URL do backend deployado quando for definitiva
-            return "https://SEU_BACKEND_PUBLICO.example.com";
+            // Se não colocou API_OVERRIDE e não está em localhost, não temos backend público configurado.
+            // Substitua abaixo pela URL do seu backend quando fizer deploy.
+            return null;
         }
 
-        let API_BASE = detectApiBase();
+        const API_BASE = detectApiBase(); // null se não configurado
 
         const loginForm = document.getElementById("loginForm");
         const emailInput = document.getElementById("email");
@@ -57,19 +60,16 @@
         const redirectToPainel = () => window.location.href = 'admin/painel.html';
         const redirectToHome = () => window.location.href = 'index.html';
 
+        // tenta sequencialmente várias URLs até obter resposta de rede (não apenas 4xx/5xx)
         async function tryFetchWithFallbacks(urls, fetchOptions) {
-            // tenta sequencialmente as urls até obter sucesso de conexão (fetch não rejeitar com network error)
             for (const url of urls) {
                 try {
                     const res = await fetch(url, fetchOptions);
-                    // se chegou aqui, a conexão foi feita (pode ser 4xx/5xx, mas não connection-refused)
-                    return res;
+                    return res; // se chegou aqui, conexão feita (mesmo 401 etc)
                 } catch (err) {
-                    // erro de rede — tentar próxima URL
-                    console.warn(`Falha ao conectar em ${url}:`, err);
+                    console.warn(`Falha de rede em ${url}:`, err);
                 }
             }
-            // todas falharam
             throw new Error("Todas as tentativas de conexão falharam (network error).");
         }
 
@@ -79,60 +79,45 @@
             const password = passwordInput.value.trim();
             if (!email || !password) { alert("Preencha e-mail e senha."); return; }
 
-            // montar lista de endpoints a tentar
+            // montar a lista de endpoints a tentar
+            // montar a lista de endpoints a tentar
             const endpoints = [];
-            if (API_OVERRIDE) endpoints.push(`${API_OVERRIDE}/login`);
+
+            if (API_OVERRIDE) {
+                endpoints.push(`${API_OVERRIDE.replace(/\/+$/, "")}/login`);
+            }
+
+            // ambiente local
             if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
-                // tenta as portas locais definidas
-                for (const p of LOCAL_PORTS_TO_TRY) endpoints.push(`http://localhost:${p}/login`);
-            }
-            // sempre inclui a base "produção" (pode falhar se você não tiver deploy)
-            const prodBase = (API_BASE && !API_OVERRIDE && !(location.hostname === "localhost")) ? API_BASE : null;
-            if (prodBase) endpoints.push(`${prodBase}/login`);
-
-            if (!endpoints.length) {
-                alert("Nenhum endpoint configurado. Edite API_BASE ou API_OVERRIDE no código.");
-                return;
+                for (const p of LOCAL_PORTS_TO_TRY) {
+                    endpoints.push(`http://localhost:${p}/login`);
+                }
             }
 
-            const options = {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password })
-            };
+            // ambiente hospedado (deploy)
+            if (API_BASE && !API_OVERRIDE && !(location.hostname === "localhost")) {
+                endpoints.push(`${API_BASE}/login`);
+            }
+
+            // 👇 ADICIONE AQUI: DEBUG IMPORTANTE
+            console.log("Endpoints que serão testados:", endpoints);
 
             try {
                 const response = await tryFetchWithFallbacks(endpoints, options);
-                // se response é undefined cai no catch
                 const data = await response.json().catch(() => ({}));
+
                 if (response.ok && data.token) {
-                    // CÓDIGO COM DEBUG - Mantenha este código por enquanto
-                    // ...
                     localStorage.setItem("token", data.token);
 
-                    console.log("Token recebido:", data.token); // DEBUG 1
-
+                    // decodifica token para role (se presente)
                     try {
                         const payload = JSON.parse(atob(data.token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+                        if (payload.role === 'admin') return redirectToPainel();
+                    } catch (_) { /* ignora se token não decodificar */ }
 
-                        console.log("Payload decodificado:", payload); // DEBUG 2
-                        console.log("Role do usuário:", payload.role); // DEBUG 3
-
-                        if (payload.role === 'admin') {
-                            console.log("SUCESSO: Redirecionando para Painel Admin."); // DEBUG 4
-                            return redirectToPainel();
-                        }
-                    } catch (e) {
-                        console.error("Erro ao decodificar token:", e); // DEBUG 5
-                    }
-
-                    console.log("ATENÇÃO: Redirecionando para Home (role não é admin)."); // DEBUG 6
-                    return redirectToHome();
-                    // ...
                     return redirectToHome();
                 } else {
-                    // exibe mensagem retornada pelo backend ou fallback
-                    alert(data.message || data.error || "Erro ao fazer login. Verifique credenciais.");
+                    alert(data.message || data.error || `Erro ao fazer login (status ${response.status}).`);
                 }
             } catch (err) {
                 console.error("Erro de rede (todas as tentativas):", err);
@@ -142,7 +127,7 @@
 
         loginForm.addEventListener("submit", handleLogin);
 
-        // se já tiver token -> decodifica e redireciona conforme role
+        // redirecionamento se já logado
         window.addEventListener("DOMContentLoaded", () => {
             const token = localStorage.getItem("token");
             if (!token) return;
@@ -150,9 +135,7 @@
                 const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
                 if (payload.role === 'admin') redirectToPainel();
                 else redirectToHome();
-            } catch (_) {
-                // token inválido -> ignora
-            }
+            } catch (_) { }
         });
     </script>
 </body>

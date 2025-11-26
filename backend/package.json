@@ -1,8 +1,8 @@
 {
   "name": "trabalhofinal",
   "version": "1.0.0",
-  "main": "auth.js",
   "type": "module",
+  "main": "auth.js",
   "scripts": {
     "start": "node auth.js"
   },
