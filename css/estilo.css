@@ -148,7 +148,7 @@ nav a.active {
   color: black;
   margin-top: 40px;
   letter-spacing: 1px;
-  text-shadow: 0 0 15px black;
+  text-shadow: 0 0 15px #ff00ff;
 }
 
 .cards-container {
