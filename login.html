@@ -8,30 +8,50 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link href="https://fonts2.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/estilo.css">
+
 </head>
 
 <body class="login-page">
     <div class="login-container">
-        <div class="logo-login"><a href="index.html"><i class="fa-solid fa-gamepad"
-                    aria-label="RetroPoint Logo"></i></a></div>
+        <div class="logo-login">
+            <a href="index.html"><i class="fa-solid fa-gamepad" aria-label="RetroPoint Logo"></i></a>
+        </div>
+
         <h1>Insira seus dados para entrar ou criar sua conta</h1>
+
         <div class="country-selector">Brasil</div>
 
         <form id="loginForm">
-            <div class="input-group"><input type="email" id="email" name="email" placeholder="E-mail" required></div>
-            <div class="input-group"><input type="password" id="password" name="password" placeholder="Senha" required>
+
+            <div class="input-group">
+                <input type="email" id="email" name="email" placeholder="E-mail" required>
             </div>
+
+            <!-- AQUI ESTÁ O CAMPO DE SENHA COM O OLHO -->
+            <div class="input-group password-group">
+                <input type="password" id="password" name="password" placeholder="Senha" required>
+                <span class="toggle-password" id="togglePassword">
+                    <i class="fa-solid fa-eye-slash"></i>
+                </span>
+            </div>
+
             <a href="#" class="forgot-password">Esqueceu sua senha?</a>
-            <div class="legal-text">Ao continuar, afirmo que concordo com a <a href="#">Política de privacidade</a> e os
-                <a href="#">Termos de uso</a> da RetroPoint.
+
+            <div class="legal-text">
+                Ao continuar, afirmo que concordo com a
+                <a href="#">Política de privacidade</a> e os <a href="#">Termos de uso</a> da RetroPoint.
+                <br>
+                Primeira vez aqui? 
+                <a href="cadastre-se.html">Crie uma conta.</a>
             </div>
+
             <button type="submit" id="continueBtn" class="btn-continue">Continuar</button>
         </form>
     </div>
 
     <script>
         /* CONFIG */
-        const API_OVERRIDE = "https://super-space-pancake-wrj6wv5g555259jq-5502.app.github.dev"; // BACKEND público
+        const API_OVERRIDE = "https://super-space-pancake-wrj6wv5g555259jq-5502.app.github.dev";
         const LOCAL_PORTS_TO_TRY = [5502, 5501, 3000];
 
         function detectApiBase() {
@@ -46,10 +66,10 @@
         const loginForm = document.getElementById("loginForm");
         const emailInput = document.getElementById("email");
         const passwordInput = document.getElementById("password");
+
         const redirectToPainel = () => window.location.href = 'admin/painel.html';
         const redirectToHome = () => window.location.href = 'index.html';
 
-        /* tenta sequencialmente várias URLs até obter resposta de rede (não apenas 4xx/5xx) */
         async function tryFetchWithFallbacks(urls, fetchOptions) {
             for (const url of urls) {
                 try {
@@ -69,12 +89,13 @@
             const password = passwordInput.value.trim();
             if (!email || !password) { alert("Preencha e-mail e senha."); return; }
 
-            // montar lista de endpoints
             const endpoints = [];
             if (API_OVERRIDE) endpoints.push(`${API_OVERRIDE.replace(/\/+$/, "")}/login`);
+
             if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
                 for (const p of LOCAL_PORTS_TO_TRY) endpoints.push(`http://localhost:${p}/login`);
             }
+
             if (API_BASE && !API_OVERRIDE && !(location.hostname === "localhost")) {
                 endpoints.push(`${API_BASE}/login`);
             }
@@ -96,57 +117,51 @@
 
             try {
                 const response = await tryFetchWithFallbacks(endpoints, options);
-
-                console.log("Resposta recebida:", response.status, response.statusText);
-                try {
-                    console.log("Response headers:",
-                        "cache-control:", response.headers.get("cache-control"),
-                        "etag:", response.headers.get("etag"),
-                        "vary:", response.headers.get("vary")
-                    );
-                } catch (hErr) {
-                    console.warn("Erro lendo headers:", hErr);
-                }
-
                 const text = await response.text().catch(() => "");
-                console.log("Resposta (texto):", text);
 
                 let data = {};
                 if (text && text.trim() !== "") {
-                    try { data = JSON.parse(text); } catch (e) { console.warn("Resposta não é JSON:", e); data = {}; }
+                    try { data = JSON.parse(text); } catch { data = {}; }
                 }
 
                 if (response.ok && data.token) {
-                    console.log("Token recebido — salvando em localStorage.");
                     localStorage.setItem("token", data.token);
                     try {
                         const payload = JSON.parse(atob(data.token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
                         if (payload.role === 'admin') return redirectToPainel();
-                    } catch (_) { }
+                    } catch { }
                     return redirectToHome();
                 }
 
-                if (response.status === 304) {
-                    alert("Resposta 304 (Not Modified). Faça um hard refresh (Ctrl+F5) e tente novamente.");
-                } else {
-                    alert(data.message || data.error || `Erro ao fazer login (status ${response.status}).`);
-                }
+                alert(data.message || data.error || `Erro ao fazer login (status ${response.status}).`);
+
             } catch (err) {
-                console.error("Erro de rede (todas as tentativas):", err);
+                console.error("Erro de rede:", err);
                 alert("Erro de rede. Não foi possível conectar ao backend.");
             }
         }
 
         loginForm.addEventListener("submit", handleLogin);
 
-        // redirect se já logado
         window.addEventListener("DOMContentLoaded", () => {
             const token = localStorage.getItem("token");
             if (!token) return;
             try {
                 const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
                 if (payload.role === 'admin') redirectToPainel(); else redirectToHome();
-            } catch (_) { }
+            } catch { }
+        });
+
+        /* --- SCRIPT DO OLHO DE MOSTRAR/OCULTAR SENHA --- */
+        const togglePassword = document.getElementById("togglePassword");
+
+        togglePassword.addEventListener("click", () => {
+            const isPassword = passwordInput.type === "password";
+            passwordInput.type = isPassword ? "text" : "password";
+
+            togglePassword.innerHTML = isPassword
+                ? '<i class="fa-solid fa-eye"></i>'
+                : '<i class="fa-solid fa-eye-slash"></i>';
         });
     </script>
 
