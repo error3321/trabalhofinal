@@ -53,7 +53,7 @@
                 Ao criar uma conta, você concorda com a
                 <a href="#">Política de privacidade</a> e os
                 <a href="#">Termos de uso</a> da RetroPoint.
-                <br>
+                <br><br>
                 Já possui conta?
                 <a href="login.html">Faça login.</a>
             </div>
@@ -63,7 +63,9 @@
     </div>
 
     <script>
-        /* Funções do olho para os dois campos */
+        const API_URL = "https://retro-point-be.vercel.app";
+
+        // Funções do olho
         function configurarOlho(inputId, toggleId) {
             const input = document.getElementById(inputId);
             const toggle = document.getElementById(toggleId);
@@ -81,8 +83,8 @@
         configurarOlho("senha", "toggleSenha");
         configurarOlho("confirmarSenha", "toggleConfirmarSenha");
 
-        /* Envio do formulário (você pode integrar com seu backend depois) */
-        document.getElementById("registerForm").addEventListener("submit", function (e) {
+        // Envio do formulário para o backend
+        document.getElementById("registerForm").addEventListener("submit", async function (e) {
             e.preventDefault();
 
             const nome = document.getElementById("nome").value.trim();
@@ -95,7 +97,28 @@
                 return;
             }
 
-            alert("Conta criada com sucesso! (aqui você conecta com o backend)");
+            try {
+                const response = await fetch(`${API_URL}/register`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ nome, email, senha })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert("Conta criada com sucesso!");
+                    window.location.href = "login.html";
+                } else {
+                    alert(data.mensagem || "Erro ao criar conta.");
+                }
+
+            } catch (erro) {
+                console.error("Erro:", erro);
+                alert("Erro de conexão com o servidor.");
+            }
         });
     </script>
 
