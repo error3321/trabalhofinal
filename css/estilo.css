@@ -975,3 +975,22 @@ nav a.active {
   .rp-toast-container { right: 10px; left: 10px; align-items: center; }
   .rp-toast { width: 100%; max-width: 420px; box-sizing: border-box; }
 }
+
+.card-value-container {
+    display: flex;
+    flex-direction: column; /* Empilha os itens verticalmente */
+    align-items: flex-start; /* Alinha à esquerda */
+}
+
+.currency-symbol {
+    font-size: 1rem; /* Tamanho menor para o R$ */
+    color: #9CA3AF; /* Cor cinza mais suave */
+    font-weight: 500;
+}
+
+.card-value {
+    font-size: 2rem; /* Tamanho do número principal */
+    font-weight: 700;
+    line-height: 1;
+    margin-top: 0.25rem;
+}

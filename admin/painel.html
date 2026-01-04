@@ -9,32 +9,23 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
     <style>
-        /* VARIÁVEIS DE TEMA */
         :root {
             --highlight-main: #3B82F6;
-            /* Azul Suave (Blue 500) */
             --highlight-secondary: #60A5FA;
-            /* Azul Claro (Blue 400) */
             --bg-dark: #1F2937;
-            /* Fundo Escuro (Gray 800) */
             --bg-card: #374151;
-            /* Fundo de Cartão/Tabela (Gray 700) */
         }
 
-        /* Estilos do corpo e fundo */
         body {
             background-color: var(--bg-dark);
             color: #F3F4F6;
-            /* Texto Branco Suave */
             font-family: 'Inter', sans-serif;
         }
 
-        /* Estilo para o cabeçalho personalizado */
         header {
             border-color: var(--highlight-main);
         }
 
-        /* Estilos de Botão Adicionar */
         .add-btn {
             background-color: var(--highlight-main);
             color: white;
@@ -48,21 +39,13 @@
             box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3);
         }
 
-        /* Estilos da Tabela */
         .admin-table th {
             background-color: #4B5563;
-            /* Gray 600 */
             color: #D1D5DB;
-            /* Gray 300 */
             text-transform: uppercase;
             font-weight: 600;
         }
 
-        .admin-table td {
-            border-color: #4B5563;
-        }
-
-        /* Estilo para a imagem de exemplo na tabela */
         .table-img {
             width: 60px;
             height: 60px;
@@ -71,7 +54,6 @@
             border: 1px solid #6B7280;
         }
 
-        /* Estilos do Modal */
         .modal-overlay {
             background-color: rgba(0, 0, 0, 0.7);
             backdrop-filter: blur(3px);
@@ -89,53 +71,21 @@
             border: 1px solid #6B7280;
             color: white;
         }
-
-        .modal-content input:focus,
-        .modal-content textarea:focus {
-            border-color: var(--highlight-main);
-            box-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
-        }
     </style>
 </head>
-
-<div id="toast" class="fixed bottom-6 right-6 px-4 py-3 rounded-xl text-white font-semibold shadow-xl
-            bg-green-600 hidden transition-all duration-300">
-</div>
-<div id="confirmSignOutModal" class="fixed inset-0 hidden items-center justify-center z-50 p-4"
-    style="background-color: rgba(0, 0, 0, 0.7); backdrop-filter: blur(3px);">
-    <div class="bg-gray-800 p-8 rounded-xl w-full max-w-sm text-center shadow-2xl">
-        <h3 class="text-2xl font-bold mb-4 text-white">Deseja sair?</h3>
-        <p class="text-gray-400 mb-8">Clique em confirmar para encerrar sua sessão.</p>
-
-        <div class="flex justify-end space-x-4">
-            <button id="cancelSignOutBtn" class="px-4 py-2 rounded-lg text-gray-400 hover:text-white transition">
-                Cancelar
-            </button>
-            <button id="confirmSignOutBtn"
-                class="bg-red-600 text-white px-4 py-2 rounded-lg transition hover:bg-red-500 font-semibold">
-                Confirmar saída
-            </button>
-        </div>
-    </div>
-</div>
 
 <body class="p-4 sm:p-8">
 
     <header
         class="w-full bg-gray-900 text-white shadow-lg mb-8 py-4 px-6 flex justify-between items-center rounded-xl border">
-
         <div class="flex items-center space-x-4">
-            <div class="text-2xl font-bold tracking-wide">
-                RetroPoint • Admin
-            </div>
-            <div class="text-sm text-gray-400">
-                Usuário: <span id="accountName" class="font-medium text-highlight-secondary">Carregando...</span>
-            </div>
+            <div class="text-2xl font-bold tracking-wide">RetroPoint • Admin</div>
+            <div class="text-sm text-gray-400">Usuário: <span id="accountName"
+                    class="font-medium text-highlight-secondary">Carregando...</span></div>
         </div>
-
         <nav class="space-x-6 text-lg">
             <a href="dashboard.html" class="hover:text-highlight-main transition">Dashboard</a>
-            <a href="sair.html" id="signOutLink" class="hover:text-grey-900 transition font-semibold">Sair</a>
+            <a href="sair.html" id="signOutLink" class="hover:text-gray-400 transition font-semibold">Sair</a>
         </nav>
     </header>
 
@@ -152,53 +102,15 @@
                 <table class="min-w-full divide-y divide-gray-700 admin-table">
                     <thead>
                         <tr>
-                            <th class="px-4 py-3 text-left text-xs tracking-wider rounded-tl-lg">Imagem</th>
+                            <th class="px-4 py-3 text-left text-xs tracking-wider">Imagem</th>
                             <th class="px-4 py-3 text-left text-xs tracking-wider">Nome</th>
                             <th class="px-4 py-3 text-left text-xs tracking-wider">Preço</th>
-                            <th class="px-4 py-3 text-center text-xs tracking-wider rounded-tr-lg">Ações</th>
+                            <th class="px-4 py-3 text-center text-xs tracking-wider">Ações</th>
                         </tr>
                     </thead>
                     <tbody id="productTableBody" class="divide-y divide-gray-700 bg-gray-800">
-                        <tr class="hover:bg-gray-700">
-                            <td class="px-4 py-4 whitespace-nowrap" colspan="4">Carregando produtos...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <section>
-            <h2 class="text-2xl font-semibold text-highlight-secondary mb-4">Vendas Recebidas</h2>
-            <div class="overflow-x-auto rounded-lg shadow-xl">
-                <table class="min-w-full divide-y divide-gray-700 admin-table">
-                    <thead>
                         <tr>
-                            <th class="px-4 py-3 text-left text-xs tracking-wider rounded-tl-lg">Nome</th>
-                            <th class="px-4 py-3 text-left text-xs tracking-wider">Telefone</th>
-                            <th class="px-4 py-3 text-left text-xs tracking-wider">Email</th>
-                            <th class="px-4 py-3 text-left text-xs tracking-wider">Descrição</th>
-                            <th class="px-4 py-3 text-center text-xs tracking-wider">Foto</th>
-                            <th class="px-4 py-3 text-center text-xs tracking-wider rounded-tr-lg">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-700 bg-gray-800">
-                        <tr class="hover:bg-gray-700">
-                            <td class="px-4 py-4 whitespace-nowrap">João Silva</td>
-                            <td class="px-4 py-4 whitespace-nowrap">(38) 99990-0000</td>
-                            <td class="px-4 py-4 whitespace-nowrap">joao@email.com</td>
-                            <td class="px-4 py-4 whitespace-nowrap">NES em bom estado</td>
-                            <td class="px-4 py-4 whitespace-nowrap text-center">
-                                <img src="https://placehold.co/60x60/374151/FFFFFF?text=NES" alt="NES venda"
-                                    class="table-img mx-auto">
-                            </td>
-                            <td class="px-4 py-4 whitespace-nowrap text-center">
-                                <button
-                                    class="btn-edit bg-yellow-500 text-black px-3 py-1 text-sm rounded-md mr-2 transition hover:bg-yellow-400"><i
-                                        class="fas fa-edit"></i> Editar</button>
-                                <button
-                                    class="btn-delete bg-red-600 text-white px-3 py-1 text-sm rounded-md transition hover:bg-red-500"><i
-                                        class="fas fa-trash"></i> Excluir</button>
-                            </td>
+                            <td colspan="4" class="text-center py-4">Iniciando...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -209,199 +121,73 @@
             <div class="modal-content w-full max-w-lg p-6 rounded-xl">
                 <h3 id="modalTitle" class="text-2xl font-bold mb-6 text-highlight-main border-b border-gray-600 pb-2">
                     Adicionar Novo Produto</h3>
-
                 <form id="productForm">
+                    <input type="hidden" id="productId" name="productId">
                     <div class="mb-4">
-                        <label for="productName" class="block text-sm font-medium mb-1 text-gray-300">Nome do
-                            Produto*</label>
-                        <input type="text" id="productName" name="productName" required
+                        <label class="block text-sm font-medium mb-1 text-gray-300">Nome do Produto*</label>
+                        <input type="text" id="productName" required class="w-full p-2 rounded-lg focus:outline-none">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1 text-gray-300">Preço (R$)*</label>
+                        <input type="number" step="0.01" id="productPrice" required
                             class="w-full p-2 rounded-lg focus:outline-none">
                     </div>
                     <div class="mb-4">
-                        <label for="productPrice" class="block text-sm font-medium mb-1 text-gray-300">Preço
-                            (R$)*</label>
-                        <input type="number" step="0.01" id="productPrice" name="productPrice" required
-                            class="w-full p-2 rounded-lg focus:outline-none">
-                    </div>
-                    <div class="mb-4">
-                        <label for="productImage" class="block text-sm font-medium mb-1 text-gray-300">URL da
-                            Imagem</label>
-                        <input type="url" id="productImage" name="productImage"
-                            class="w-full p-2 rounded-lg focus:outline-none"
-                            placeholder="Ex: https://link.para/imagem.jpg">
+                        <label class="block text-sm font-medium mb-1 text-gray-300">URL da Imagem</label>
+                        <input type="url" id="productImage" class="w-full p-2 rounded-lg focus:outline-none"
+                            placeholder="https://...">
                     </div>
                     <div class="mb-6">
-                        <label for="productDesc" class="block text-sm font-medium mb-1 text-gray-300">Descrição</label>
-                        <textarea id="productDesc" name="productDesc" rows="3"
-                            class="w-full p-2 rounded-lg focus:outline-none"></textarea>
+                        <label class="block text-sm font-medium mb-1 text-gray-300">Descrição</label>
+                        <textarea id="productDesc" rows="3" class="w-full p-2 rounded-lg focus:outline-none"></textarea>
                     </div>
-
                     <div class="flex justify-end space-x-4">
                         <button type="button" id="cancelBtn"
-                            class="bg-gray-500 text-white px-4 py-2 rounded-lg transition hover:bg-gray-400">
-                            Cancelar
-                        </button>
-                        <button type="submit" class="add-btn px-4 py-2 rounded-lg">
-                            <i class="fas fa-save mr-2"></i> Salvar Produto
-                        </button>
+                            class="bg-gray-500 text-white px-4 py-2 rounded-lg">Cancelar</button>
+                        <button type="submit" class="add-btn px-4 py-2 rounded-lg">Salvar Produto</button>
                     </div>
                 </form>
             </div>
         </div>
-
     </main>
 
     <script>
-        const API_BASE = "https://super-space-pancake-wrj6wv5g555259jq-5502.app.github.dev";
-
-        // ------------------------------------------
-        // PROTEÇÃO DE LOGIN VIA JWT (CÓDIGO MODIFICADO)
-        // ------------------------------------------
+        // 1. CONSTANTES E ESTADO GLOBAL
+        const API_BASE = "https://retro-point-be.vercel.app";
         const token = localStorage.getItem("token");
-        const redirectToLogin = () => window.location.href = "../login.html";
 
-        if (!token) {
-            redirectToLogin(); // Redireciona pra login se não tiver token
-        }
-
-        function decodeToken(token) {
-            try {
-                // Decodifica a parte do payload (segunda parte) do token JWT
-                const payloadBase64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-                return JSON.parse(atob(payloadBase64));
-            } catch (e) {
-                console.error("Token inválido ou malformado:", e);
-                return null;
-            }
-        }
-
-        const userPayload = decodeToken(token);
-
-        // Verifica se o token é válido E se o usuário é admin
-        if (!userPayload || userPayload.role !== 'admin') {
-            // Se não for válido ou não for admin, apaga o token e redireciona
-            localStorage.removeItem("token");
-            alert("Acesso negado. Apenas administradores podem acessar o painel.");
-            redirectToLogin();
-        } else {
-            // Se for admin, exibe o email (ou o prefixo)
-            document.getElementById("accountName").textContent = userPayload.email.split("@")[0];
-        }
-
-
-        // ------------------------------------------
-        // FUNÇÃO PARA CARREGAR PRODUTOS DO NEON
-        // ------------------------------------------
-        async function carregarProdutos() {
-            const tbody = document.getElementById("productTableBody");
-            tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4">Carregando produtos...</td></tr>`;
-
-            // ROTA CORRIGIDA PARA /produto/list e PORTA 5501
-            const response = await fetch(`${API_BASE}/produto/list`, {
-                headers: { "Authorization": "Bearer " + token }
-            });
-
-            if (!response.ok) {
-                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-red-400">Erro ao carregar produtos (Status: ${response.status}). Verifique o backend.</td></tr>`;
-                return;
-            }
-
-            const produtos = await response.json().catch(() => []);
-
-            if (produtos.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4">Nenhum produto cadastrado.</td></tr>`;
-                return;
-            }
-
-            tbody.innerHTML = "";
-
-            produtos.forEach(prod => {
-                // As colunas da tabela de exemplo (vendas recebidas) tinham 6 colunas, mas a de produtos só tem 4 (Imagem, Nome, Preço, Ações).
-                // Mudei o `id_produto` para `id_produto` conforme o esquema de banco que parece estar sendo usado.
-                tbody.innerHTML += `
-                <tr class="hover:bg-gray-700">
-                    <td class="px-4 py-4 whitespace-nowrap">
-                        <img src="${prod.imagem || 'https://placehold.co/60x60'}" 
-                            class="table-img" alt="${prod.nome}">
-                    </td>
-                    <td class="px-4 py-4 whitespace-nowrap">${prod.nome}</td>
-                    <td class="px-4 py-4 whitespace-nowrap">R$ ${Number(prod.preco).toFixed(2).replace('.', ',')}</td>
-                    <td class="px-4 py-4 whitespace-nowrap text-center">
-                        
-                        <button class="btn-edit bg-yellow-500 text-black px-3 py-1 text-sm rounded-md mr-2">
-                            <i class="fas fa-edit"></i> Editar
-                        </button>
-
-                        <button onclick="excluirProduto(${prod.id_produto})"
-                                class="btn-delete bg-red-600 text-white px-3 py-1 text-sm rounded-md">
-                            <i class="fas fa-trash"></i> Excluir
-                        </button>
-
-                    </td>
-                </tr>`;
-            });
-        }
-
-        // Carrega os produtos ao abrir o painel
-        window.addEventListener("DOMContentLoaded", carregarProdutos);
-
-        //-------------------------------------------
-        // Função de excluir produtos
-        //-------------------------------------------
-        async function excluirProduto(id) {
-            if (!confirm("Tem certeza que deseja excluir este produto?")) return;
-
-            // ROTA CORRIGIDA PARA /produto/delete/:id e PORTA 5501
-            const response = await fetch(`${API_BASE}/produto/delete/${id}`, {
-                method: "DELETE",
-                headers: {
-                    "Authorization": "Bearer " + token
-                }
-            });
-
-            const result = await response.json();
-
-            if (response.ok) {
-                alert(result.message || "Produto excluído com sucesso!");
-                carregarProdutos(); // recarrega a tabela
-            } else {
-                alert(result.message || "Erro ao excluir produto.");
-            }
-        }
-
-        // ------------------------------------------
-        // SAIR (MANTIDO)
-        // ------------------------------------------
-        const signOutLink = document.getElementById("signOutLink");
-        const confirmSignOutModal = document.getElementById("confirmSignOutModal");
-        const cancelSignOutBtn = document.getElementById("cancelSignOutBtn");
-        const confirmSignOutBtn = document.getElementById("confirmSignOutBtn");
-
-        signOutLink.addEventListener("click", (e) => {
-            e.preventDefault();
-            confirmSignOutModal.classList.remove("hidden");
-        });
-
-        cancelSignOutBtn.addEventListener("click", () => {
-            confirmSignOutModal.classList.add("hidden");
-        });
-
-        confirmSignOutBtn.addEventListener("click", () => {
-            localStorage.removeItem("token");
-            window.location.href = "../login.html"; // Volta para a página de login (um nível acima)
-        });
-
-
-        // ------------------------------------------
-        // ADICIONAR PRODUTO (MANTIDO)
-        // ------------------------------------------
+        // 2. REFERÊNCIAS DO DOM (DEFINIDAS NO TOPO PARA EVITAR REFERENCE ERROR)
         const productModal = document.getElementById('productModal');
         const addProductBtn = document.getElementById('addProductBtn');
         const cancelBtn = document.getElementById('cancelBtn');
         const productForm = document.getElementById('productForm');
+        const productTableBody = document.getElementById("productTableBody");
+        const accountNameSpan = document.getElementById("accountName");
 
-        function openModal() {
-            productForm.reset(); // Limpa o formulário ao abrir
+        // 3. PROTEÇÃO DE ACESSO
+        if (!token) window.location.href = "../login.html";
+
+        function decodeToken(t) {
+            try {
+                return JSON.parse(atob(t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+            } catch (e) { return null; }
+        }
+
+        const user = decodeToken(token);
+        if (!user || user.role !== 'admin') {
+            localStorage.removeItem("token");
+            window.location.href = "../login.html";
+        } else {
+            accountNameSpan.textContent = user.email.split("@")[0];
+        }
+
+        // 4. FUNÇÕES DO MODAL
+        function openModal(isEdit = false) {
+            if (!isEdit) {
+                productForm.reset();
+                document.getElementById("productId").value = "";
+                document.getElementById("modalTitle").textContent = "Adicionar Novo Produto";
+            }
             productModal.classList.remove("hidden");
             productModal.classList.add("flex");
         }
@@ -411,49 +197,115 @@
             productModal.classList.remove("flex");
         }
 
-        addProductBtn.addEventListener("click", openModal);
-        cancelBtn.addEventListener("click", closeModal);
+        // 5. OPERAÇÕES CRUD
+        async function carregarProdutos() {
+            productTableBody.innerHTML = `<tr><td colspan="4" class="text-center py-4">Carregando...</td></tr>`;
+            try {
+                // Note que usamos /produto (ou a rota que você definiu para listar)
+                const res = await fetch(`${API_BASE}/produto`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
 
-        productModal.addEventListener("click", (e) => {
-            if (e.target === productModal) closeModal();
-        });
+                if (!res.ok) throw new Error(`Erro ${res.status}`);
 
+                const produtos = await res.json();
+                productTableBody.innerHTML = "";
 
-        // ------------------------------------------
-        // SALVAR PRODUTO NO NEON
-        // ------------------------------------------
-        productForm.addEventListener("submit", async (e) => {
+                produtos.forEach(p => {
+                    const tr = document.createElement("tr");
+                    tr.className = "hover:bg-gray-700 border-b border-gray-700";
+                    tr.innerHTML = `
+                    <td class="px-4 py-4"><img src="${p.imagem || 'https://placehold.co/60x60'}" class="table-img"></td>
+                    <td class="px-4 py-4">${p.nome}</td>
+                    <td class="px-4 py-4">R$ ${Number(p.preco).toFixed(2)}</td>
+                    <td class="px-4 py-4 text-center">
+                        <button class="bg-yellow-500 text-black px-3 py-1 text-sm rounded mr-2 btn-edit"><i class="fas fa-edit"></i> Editar</button>
+                        <button class="bg-red-600 text-white px-3 py-1 text-sm rounded btn-del"><i class="fas fa-trash"></i> Excluir</button>
+                    </td>
+                `;
+                    // Vincula os eventos aos botões
+                    tr.querySelector(".btn-edit").onclick = () => prepararEdicao(p);
+                    tr.querySelector(".btn-del").onclick = () => excluirProduto(p.id_produto);
+                    productTableBody.appendChild(tr);
+                });
+            } catch (err) {
+                productTableBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-red-400">Erro: ${err.message}. Verifique o banco de dados.</td></tr>`;
+            }
+        }
+
+        //6. PREPARAR EDIÇÃO
+        function prepararEdicao(p) {
+            openModal(true);
+            document.getElementById("modalTitle").textContent = "Editar Produto";
+            // IMPORTANTE: Garantir que estamos usando id_produto
+            document.getElementById("productId").value = p.id_produto;
+            document.getElementById("productName").value = p.nome;
+            document.getElementById("productPrice").value = p.preco;
+            document.getElementById("productImage").value = p.imagem || "";
+            document.getElementById("productDesc").value = p.descricao || "";
+        }
+
+        //7. Salvar (Adicionar ou Atualizar)
+        productForm.onsubmit = async (e) => {
             e.preventDefault();
-
+            const id = document.getElementById("productId").value;
             const data = {
-                name: productForm.productName.value,
-                price: parseFloat(productForm.productPrice.value),
-                imageUrl: productForm.productImage.value,
-                description: productForm.productDesc.value
+                nome: document.getElementById("productName").value,
+                preco: parseFloat(document.getElementById("productPrice").value),
+                imagem: document.getElementById("productImage").value,
+                descricao: document.getElementById("productDesc").value
             };
 
-            // ROTA CORRIGIDA PARA /produto/add e PORTA 5501
-            const response = await fetch(`${API_BASE}/produto/add`, {
-                method: "POST",
-                headers: {
-                    "Authorization": "Bearer " + token,
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({email, senha: password})
-            });
+            const url = id ? `${API_BASE}/produto/update/${id}` : `${API_BASE}/produto/add`;
+            const method = id ? "PUT" : "POST";
 
-            const result = await response.json();
+            try {
+                const res = await fetch(url, {
+                    method: method,
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
+                });
 
-            if (response.ok) {
-                alert(result.message || "Produto cadastrado com sucesso!");
-                closeModal();
-                carregarProdutos(); // Atualiza tabela após salvar
-            } else {
-                alert(result.message || "Erro ao salvar produto! Verifique se você é admin e o servidor.");
+                if (res.ok) {
+                    alert(id ? "Produto atualizado!" : "Produto adicionado!");
+                    closeModal();
+                    carregarProdutos();
+                } else {
+                    const erro = await res.json();
+                    alert("Erro no servidor: " + (erro.message || erro.error));
+                }
+            } catch (err) {
+                alert("Erro de conexão com o servidor.");
             }
-        });
-    </script>
+        };
 
+        //8. Excluir Produto
+        async function excluirProduto(id) {
+            if (!confirm("Tem certeza que deseja excluir este produto?")) return;
+            try {
+                const res = await fetch(`${API_BASE}/produto/delete/${id}`, {
+                    method: "DELETE",
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    alert("Produto excluído!");
+                    carregarProdutos();
+                } else {
+                    alert("Erro ao excluir. Verifique o console.");
+                }
+            } catch (err) { alert("Erro de rede."); }
+        }
+
+        // Eventos de Botões
+        addProductBtn.onclick = () => openModal(false);
+        cancelBtn.onclick = closeModal;
+
+        // Inicialização
+        carregarProdutos();
+    </script>
 </body>
 
 </html>
