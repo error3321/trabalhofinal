@@ -305,6 +305,27 @@
 
         // Inicialização
         carregarProdutos();
+
+        // Colocar produtos cadastrados na página oficial
+        async function cadastrarProduto() {
+            const produto = {
+                nome: document.getElementById('nome').value,
+                preco: parseFloat(document.getElementById('preco').value),
+                imagem: document.getElementById('imagem').value
+            };
+
+            // Envia para o seu backend que está conectado ao Neon
+            const resposta = await fetch('/api/produtos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(produto)
+            });
+
+            if (resposta.ok) {
+                alert("Produto cadastrado no Neon com sucesso!");
+            }
+        }
+
     </script>
 </body>
 

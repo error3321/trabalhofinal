@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RetroPoint - Detalhes do Produto</title>
+    <link rel="stylesheet" href="css/estilo.css">
+    <link rel="icon" href="imgs/topo site.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        /* Estilos específicos para a página de detalhes */
+        .product-page {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            color: white;
+        }
+
+        .product-image img {
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .product-info h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .stars {
+            color: #ffcc00;
+            margin-bottom: 20px;
+        }
+
+        .price-tag {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #00ff88;
+            margin-bottom: 10px;
+        }
+
+        .payment-info {
+            font-size: 0.9rem;
+            color: #bbb;
+            margin-bottom: 30px;
+        }
+
+        .buy-box {
+            background: #1a1a1a;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #333;
+        }
+
+        .btn-buy {
+            display: block;
+            background: #28a745;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            text-decoration: none;
+            font-size: 1.2rem;
+            transition: 0.3s;
+        }
+
+        .btn-buy:hover {
+            background: #218838;
+            transform: scale(1.02);
+        }
+
+        /* Seção de Relacionados */
+        .related-section {
+            max-width: 1200px;
+            margin: 60px auto;
+            padding: 20px;
+            border-top: 1px solid #333;
+        }
+
+        .related-title {
+            color: white;
+            margin-bottom: 30px;
+            font-size: 1.8rem;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="logo"><img src="imgs/RetroPointIcon.png" alt="Logo" class="logo-img">RetroPoint</div>
+        <nav>
+            <ul>
+                <li><a href="index.html">Início</a></li>
+                <li><a href="produtos.html" class="active">Produtos</a></li>
+                <li><a href="sobre.html">Sobre</a></li>
+                <li><a href="login.html">Entrar</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="product-page" id="product-content">
+        <p>Carregando informações do tesouro retro...</p>
+    </main>
+
+    <section class="related-section">
+        <h2 class="related-title">Quem viu este, também gostou</h2>
+        <div class="cards-container" id="related-products">
+        </div>
+    </section>
+
+    <script>
+        const gifLoading = "https://cdnjs.cloudflare.com/ajax/libs/galleriffic/2.0.1/css/loader.gif";
+
+        async function loadPage() {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id');
+
+            try {
+                const res = await fetch('https://retro-point-be.vercel.app/produto');
+                const allProducts = await res.json();
+                const prod = allProducts.find(p => p.id_produto == id);
+
+                if (prod) {
+                    document.title = `${prod.nome} - RetroPoint`;
+                    renderProduct(prod);
+                    renderRelated(allProducts, id);
+                }
+            } catch (e) {
+                console.error("Erro ao carregar dados:", e);
+            }
+        }
+
+        function renderProduct(prod) {
+            const main = document.getElementById('product-content');
+
+            // --- NOVA LÓGICA DE CÁLCULO À PROVA DE ERROS ---
+            // Pegamos o valor puro do banco (ex: 250.00)
+            let valorBruto = prod.preco.toString();
+
+            // Remove R$, espaços e pontos de milhar, deixando apenas números e a vírgula/ponto decimal
+            let valorLimpo = valorBruto.replace('R$', '').replace(/\s/g, '');
+
+            // Se o valor contiver vírgula (formato BR), mudamos para ponto para o JS entender
+            if (valorLimpo.includes(',') && valorLimpo.includes('.')) {
+                valorLimpo = valorLimpo.replace(/\./g, '').replace(',', '.');
+            } else {
+                valorLimpo = valorLimpo.replace(',', '.');
+            }
+
+            let precoNumerico = parseFloat(valorLimpo);
+
+            // DIVISÃO REAL POR 10
+            let calculoParcela = precoNumerico / 10;
+
+            // Formata para exibição (Ex: 25,00)
+            const valorParcelaFormatado = calculoParcela.toLocaleString('pt-BR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+
+            main.innerHTML = `
+            <div class="product-image-container">
+                <div class="product-image">
+                    <img id="main-img" src="${prod.imagem || gifLoading}" onerror="this.src='${gifLoading}'">
+                </div>
+                <div style="display: ${prod.imagem ? 'flex' : 'none'}; gap: 10px; margin-top: 15px;">
+                    <img src="${prod.imagem}" class="thumb-img" onclick="document.getElementById('main-img').src=this.src">
+                </div>
+            </div>
+
+            <div class="product-info">
+                <h1>${prod.nome}</h1>
+                <div class="stars" style="color: #ffcc00; margin-bottom: 10px;">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                    <span style="color: #888; font-size: 0.8rem;"> (Loja Verificada)</span>
+                </div>
+                
+                <p class="price-tag" style="color: #00ff88; font-size: 2.2rem; font-weight: bold; margin-bottom: 5px;">R$ ${prod.preco}</p>
+                <p class="payment-info" style="color: #bbb; font-size: 1.1rem; margin-bottom: 20px;">
+                    <i class="fas fa-credit-card"></i> 10x de <strong>R$ ${valorParcelaFormatado}</strong> sem juros
+                </p>
+                
+                <div class="buy-box" style="background: #111; padding: 20px; border-radius: 10px; border: 1px solid #333;">
+                    <div style="margin-bottom: 20px;">
+                        <label style="display:block; margin-bottom: 8px; font-size: 0.8rem; color: #bbb;">Simular Frete:</label>
+                        <div style="display: flex; gap: 5px;">
+                            <input type="text" id="cep-input" placeholder="00000-000" style="padding: 10px; border-radius: 5px; border: 1px solid #444; background: #000; color: white; flex: 1;">
+                            <button onclick="calcularFrete()" style="background: #00ff88; color: black; border: none; padding: 0 15px; border-radius: 5px; cursor: pointer; font-weight:bold;">OK</button>
+                        </div>
+                        <p id="frete-res" style="margin-top: 10px; font-size: 0.85rem; color: #00ff88; display: none;"></p>
+                    </div>
+
+                    <a href="https://wa.link/6bjyo7?text=Olá! Tenho interesse no ${prod.nome}." target="_blank" class="btn-buy" style="background: #25D366; color: white; display: block; text-align: center; padding: 15px; border-radius: 8px; font-weight: bold; text-decoration: none;">
+                        <i class="fab fa-whatsapp"></i> FINALIZAR NO WHATSAPP
+                    </a>
+                </div>
+                
+                <div style="margin-top: 30px;">
+                    <h3 style="color: white; border-bottom: 1px solid #333; padding-bottom: 10px;">Descrição</h3>
+                    <p style="color: #aaa; line-height: 1.6; padding-top: 10px;">
+                        ${prod.descricao || 'Produto original, testado e com garantia RetroPoint.'}
+                    </p>
+                </div>
+            </div>
+        `;
+        }
+
+        function calcularFrete() {
+            const res = document.getElementById('frete-res');
+            const btn = document.querySelector('.buy-box button');
+
+            // Mostra o container e limpa o texto anterior
+            res.style.display = "block";
+            res.style.color = "#bbb"; // Cor neutra durante o carregamento
+            res.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Calculando frete...';
+
+            // Desabilita o botão brevemente para evitar cliques repetidos
+            btn.disabled = true;
+            btn.style.opacity = "0.5";
+
+            setTimeout(() => {
+                res.style.color = "#00ff88"; // Volta para o verde da loja
+                res.innerHTML = `
+            <div style="border-top: 1px solid #333; margin-top: 10px; padding-top: 10px;">
+                <p style="margin-bottom: 5px;"><strong>PAC:</strong> Grátis (5 a 8 dias úteis)</p>
+                <p><strong>SEDEX:</strong> R$ 24,90 (2 a 3 dias úteis)</p>
+            </div>
+        `;
+                btn.disabled = false;
+                btn.style.opacity = "1";
+            }, 1500); // Aguarda 1.5 segundos para simular o cálculo
+        }
+
+        function renderRelated(all, currentId) {
+            const container = document.getElementById('related-products');
+            const filtered = all.filter(p => p.id_produto != currentId).slice(0, 4);
+            container.innerHTML = filtered.map(p => `
+            <div class="card">
+                <img src="${p.imagem || gifLoading}">
+                <div class="card-body">
+                    <h5>${p.nome}</h5>
+                    <p style="color: #00ff88; font-weight: bold;">R$ ${p.preco}</p>
+                    <a href="detalhes.html?id=${p.id_produto}" class="btn">Ver Detalhes</a>
+                </div>
+            </div>
+        `).join('');
+        }
+
+        window.onload = loadPage;
+    </script>
+
+</body>
+
+</html>

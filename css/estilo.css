@@ -78,43 +78,71 @@ nav a.active {
 }
 
 /* ===== Carrossel ===== */
+/* Container principal */
 .carousel {
-  width: 100%;
-  max-width: 1100px;
-  margin: 50px auto;
-  overflow: hidden;
-  border-radius: 10px;
-  box-shadow: 0 0 25px rgba(0, 255, 255, 0.3);
+    width: 100%;
+    height: 400px;
+    overflow: hidden; /* Esconde o que está fora da tela */
+    position: relative;
+    background-color: #000;
 }
 
+/* O trilho que desliza lateralmente */
 .carousel-track {
-  display: flex;
-  width: 200%;
-  animation: slidePromo 10s infinite alternate ease-in-out;
+    display: flex; /* Coloca as imagens lado a lado */
+    width: 100%;
+    height: 100%;
+    transition: transform 0.8s ease-in-out; /* O movimento de deslize */
 }
 
+/* Cada slide individual */
 .promo {
-  flex: 0 0 50%;
-  position: relative;
+    min-width: 100%; /* Cada slide ocupa exatamente a largura total */
+    height: 100%;
+    position: relative;
 }
 
 .promo img {
-  width: 100%;
-  display: block;
-  height: 400px;
-  object-fit: cover;
-  filter: brightness(85%);
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
+/* --- Bolinhas (Dots) --- */
+.carousel-dots {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 12px;
+    z-index: 10;
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+    background-color: #d1d1d1; /* Cinza claro */
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+    padding: 0;
+    transition: background-color 0.3s;
+}
+
+.dot.active {
+    background-color: #4f4f4f; /* Cinza escuro */
+}
+/* Texto sobre a imagem */
 .promo-info {
-  position: absolute;
-  bottom: 20px;
-  left: 20px;
-  background: rgba(0, 0, 0, 0.6);
-  padding: 15px 20px;
-  border-radius: 10px;
-  color: #fff;
-  border: 2px solid #00ffff;
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 15px;
+    border-radius: 8px;
+    color: white;
+    border-left: 4px solid #00ff88;
 }
 
 .promo-info h3 {
@@ -1570,4 +1598,41 @@ nav a.active {
     .sustain-grid {
         grid-template-columns: 1fr;
     }
+}
+
+.card img {
+    background: url('https://cdnjs.cloudflare.com/ajax/libs/galleriffic/2.0.1/css/loader.gif') no-repeat center;
+    background-size: 30px; /* Ajusta o tamanho do gif de fundo */
+    min-height: 200px; /* Garante que o espaço exista antes da imagem carregar */
+}
+
+/* Efeito de Zoom na Imagem */
+.product-image {
+    overflow: hidden; /* Esconde a imagem quando ela cresce */
+    border-radius: 10px;
+    background-color: #000;
+}
+
+.product-image img {
+    transition: transform 0.5s ease; /* Transição suave */
+    width: 100%;
+    display: block;
+}
+
+.product-image:hover img {
+    transform: scale(1.5); /* Aumenta 20% no hover */
+    cursor: zoom-in;
+}
+
+.thumb-img {
+    width: 70px; 
+    height: 70px; 
+    object-fit: cover; 
+    cursor: pointer; 
+    border-radius: 5px;
+    transition: 0.3s;
+}
+
+.thumb-img:hover {
+    border-color: #00ff88;
 }

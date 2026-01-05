@@ -49,37 +49,15 @@
         </div>
       </div>
     </div>
+    <div class="carousel-dots" id="carousel-dots"></div>
   </section>
 
   <!-- ===== Produtos em destaque ===== -->
   <h2 class="destaque-titulo">🕹️ Produtos em Destaque</h2>
 
-  <section class="cards-container">
-    <div class="card">
-      <img src="imgs/nes.jpg" alt="Nintendo NES">
-      <div class="card-body">
-        <h5 class="card-title">Nintendo NES</h5>
-        <p class="card-text">O clássico que iniciou gerações.</p>
-        <a href="#" class="btn">Comprar</a>
-      </div>
-    </div>
-
-    <div class="card">
-      <img src="imgs/snes.jpg" alt="Super Nintendo">
-      <div class="card-body">
-        <h5 class="card-title">Super Nintendo</h5>
-        <p class="card-text">Reviva os melhores jogos dos anos 90.</p>
-        <a href="#" class="btn">Comprar</a>
-      </div>
-    </div>
-
-    <div class="card">
-      <img src="imgs/mega-drive.jpg" alt="Sega Mega Drive">
-      <div class="card-body">
-        <h5 class="card-title">Sega Mega Drive</h5>
-        <p class="card-text">O rival clássico da Nintendo.</p>
-        <a href="#" class="btn">Comprar</a>
-      </div>
+  <section class="cards-container" id="destaque-container">
+    <div style="color: white; text-align: center; width: 100%;">
+      <i class="fas fa-spinner fa-spin"></i> Carregando clássicos...
     </div>
   </section>
 
@@ -178,34 +156,126 @@
 
   <div id="cookie-banner" class="cookie-container">
     <div class="cookie-content">
-        <p>
-            Utilizamos cookies para melhorar sua experiência em nosso ecossistema retro. 
-            Ao continuar, você concorda com nossa <a href="politica-cookies.html">Política de Cookies</a>.
-        </p>
-        <button id="accept-cookies" class="btn-cookie">Aceitar</button>
+      <p>
+        Utilizamos cookies para melhorar sua experiência em nosso ecossistema retro.
+        Ao continuar, você concorda com nossa <a href="politica-cookies.html">Política de Cookies</a>.
+      </p>
+      <button id="accept-cookies" class="btn-cookie">Aceitar</button>
     </div>
-</div>
+  </div>
 
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const banner = document.getElementById("cookie-banner");
-        const acceptBtn = document.getElementById("accept-cookies");
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const banner = document.getElementById("cookie-banner");
+      const acceptBtn = document.getElementById("accept-cookies");
 
-        // Verifica se o usuário já aceitou anteriormente
-        if (!localStorage.getItem("cookiesAceitos")) {
-            // Mostra o banner com um pequeno delay para efeito visual
-            setTimeout(() => {
-                banner.classList.add("show");
-            }, 2000);
+      // Verifica se o usuário já aceitou anteriormente
+      if (!localStorage.getItem("cookiesAceitos")) {
+        // Mostra o banner com um pequeno delay para efeito visual
+        setTimeout(() => {
+          banner.classList.add("show");
+        }, 2000);
+      }
+
+      // Lógica ao clicar em Aceitar
+      acceptBtn.addEventListener("click", function () {
+        localStorage.setItem("cookiesAceitos", "true");
+        banner.classList.remove("show");
+      });
+    });
+  </script>
+
+  <script>
+    async function carregarDestaques() {
+      const container = document.getElementById('destaque-container');
+      const gifLoading = "https://cdnjs.cloudflare.com/ajax/libs/galleriffic/2.0.1/css/loader.gif";
+
+      try {
+        // Chamada para a sua API no Vercel
+        const res = await fetch('https://retro-point-be.vercel.app/produto');
+        const produtos = await res.json();
+
+        // FILTRO: Pega apenas produtos onde a coluna 'destaque' é verdadeira
+        const destaques = produtos.filter(p => p.destaque === true);
+
+        if (destaques.length === 0) {
+          container.innerHTML = "<p style='color: white;'>Nenhum destaque no momento.</p>";
+          return;
         }
 
-        // Lógica ao clicar em Aceitar
-        acceptBtn.addEventListener("click", function() {
-            localStorage.setItem("cookiesAceitos", "true");
-            banner.classList.remove("show");
-        });
+        // Mapeia os produtos para o formato de Card
+        container.innerHTML = destaques.map(p => `
+                <div class="card">
+                    <img src="${p.imagem || gifLoading}" alt="${p.nome}" onerror="this.src='${gifLoading}'">
+                    <div class="card-body">
+                        <h5 class="card-title">${p.nome}</h5>
+                        <p class="card-text">${p.descricao ? p.descricao.substring(0, 60) + '...' : 'Clássico imperdível para sua coleção.'}</p>
+                        <p style="color: #00ff88; font-weight: bold; margin-bottom: 15px;">R$ ${p.preco}</p>
+                        <a href="detalhes.html?id=${p.id_produto}" class="btn">Comprar</a>
+                    </div>
+                </div>
+            `).join('');
+
+      } catch (erro) {
+        console.error("Erro ao carregar destaques:", erro);
+        container.innerHTML = "<p style='color: #ff4444;'>Erro ao conectar com o servidor.</p>";
+      }
+    }
+
+    // Inicia a função ao carregar a página
+    window.addEventListener('load', carregarDestaques);
+  </script>
+
+  <script>
+    let index = 0;
+    const track = document.querySelector('.carousel-track');
+    const slides = document.querySelectorAll('.promo');
+    const dotsContainer = document.getElementById('carousel-dots');
+
+    // Cria as bolinhas dinamicamente
+    dotsContainer.innerHTML = '';
+    slides.forEach((_, i) => {
+      const dot = document.createElement('button');
+      dot.classList.add('dot');
+      if (i === 0) dot.classList.add('active');
+      dot.onclick = () => irParaSlide(i);
+      dotsContainer.appendChild(dot);
     });
-</script>
+
+    const dots = document.querySelectorAll('.dot');
+
+    function irParaSlide(n) {
+      index = n;
+
+      // Calcula o deslocamento lateral (0%, -100%, -200%...)
+      const deslocamento = index * -100;
+      track.style.transform = `translateX(${deslocamento}%)`;
+
+      // Atualiza as bolinhas
+      dots.forEach(d => d.classList.remove('active'));
+      dots[index].classList.add('active');
+    }
+
+    function proximoSlide() {
+      index++;
+      if (index >= slides.length) {
+        index = 0; // Volta para o primeiro
+      }
+      irParaSlide(index);
+    }
+
+    // Intervalo de 5 segundos
+    let autoPlay = setInterval(proximoSlide, 5000);
+
+    // Pausa ao passar o mouse
+    const carouselArea = document.querySelector('.carousel');
+    carouselArea.addEventListener('mouseenter', () => clearInterval(autoPlay));
+    carouselArea.addEventListener('mouseleave', () => {
+      clearInterval(autoPlay);
+      autoPlay = setInterval(proximoSlide, 5000);
+    });
+  </script>
+
 </body>
 
 </html>
