@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatar um Problema | RetroPoint</title>
+    <link rel="stylesheet" href="../css/estilo.css">
+    <link rel="icon" type="image/png" href="../imgs/logoRP.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body class="legal-body">
+
+    <main class="legal-card">
+        <header class="legal-header">
+            <img src="../imgs/logoRP.png" alt="Logo RetroPoint" style="width: 50px; opacity: 0.8; margin-bottom: 20px;">
+            <h1>Relatar um Problema</h1>
+            <p class="last-update">Encontrou um bug? Ajude-nos a melhorar o sistema.</p>
+        </header>
+
+        <section class="legal-content">
+            <form action="https://formspree.io/f/mlgdzgbb" 
+            method="POST" 
+            id="bugForm" 
+            class="contact-form">
+                
+                <div class="form-group">
+                    <label for="tipo_problema">Tipo de Ocorrência</label>
+                    <select id="tipo_problema" name="tipo_problema" required>
+                        <option value="erro_tecnico">Erro Técnico / Bug no Site</option>
+                        <option value="problema_login">Dificuldade de Acesso / Login</option>
+                        <option value="erro_anuncio">Problema com Anúncio ou Vitrine</option>
+                        <option value="outro">Outro Problema</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="gravidade">Gravidade</label>
+                    <select id="gravidade" name="gravidade">
+                        <option value="baixa">Baixa - Apenas uma correção visual</option>
+                        <option value="media">Média - Funcionalidade com erro</option>
+                        <option value="alta">Alta - Não consigo usar o sistema</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="descricao">Descrição Detalhada</label>
+                    <textarea id="descricao" name="descricao" rows="5" placeholder="O que aconteceu? Qual página você estava acessando?" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="email_contato">Seu E-mail para Retorno</label>
+                    <input type="email" id="email_contato" name="email" placeholder="seu@email.com" required>
+                </div>
+
+                <button type="submit" class="btn-send">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Enviar Relatório
+                </button>
+            </form>
+        </section>
+
+        <footer class="legal-footer">
+            <a href="../index.html" class="btn-back">Voltar para o Início</a>
+        </footer>
+    </main>
+
+    <script>
+        const bugForm = document.getElementById('bugForm');
+        bugForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = this.querySelector('button');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processando...';
+
+            const formData = new FormData(this);
+            try {
+                const res = await fetch(this.action, { method: 'POST', body: formData, headers: {'Accept': 'application/json'} });
+                if (res.ok) {
+                    this.innerHTML = `
+                        <div style="text-align: center; padding: 30px 0;">
+                            <i class="fa-solid fa-check-shield" style="font-size: 50px; color: #fff; margin-bottom: 20px;"></i>
+                            <h2 style="color: #fff;">Relatório Recebido</h2>
+                            <p style="color: #888;">Obrigado por nos ajudar. Nossa equipe técnica analisará o caso.</p>
+                            <button onclick="location.reload()" class="btn-back" style="margin-top: 20px; cursor: pointer;">Voltar</button>
+                        </div>`;
+                }
+            } catch {
+                alert("Erro ao enviar relatório.");
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Tentar Novamente';
+            }
+        });
+    </script>
+</body>
+</html>

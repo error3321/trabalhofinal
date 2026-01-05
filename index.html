@@ -90,37 +90,32 @@
         <div class="footer-column">
           <h3>Loja e Novidades</h3>
           <ul>
-            <li><a href="#">Encontre nossa loja</a></li>
-            <li><a href="#">Cadastre-se para receber novidades</a></li>
+            <li><a href="footer/nossaLoja.html">Encontre nossa loja</a></li>
+            <li><a href="cadastre-se.html">Cadastre-se para receber novidades</a></li>
             <li><a href="#">Black Friday Retro!</a></li>
             <li><a href="#">Consoles Black Friday</a></li>
             <li><a href="#">Jogos Black Friday</a></li>
             <li><a href="#">Acessórios Black Friday</a></li>
-            <li><a href="#">Acompanhe seu pedido</a></li>
           </ul>
         </div>
 
         <div class="footer-column">
           <h3>Ajuda</h3>
           <ul>
-            <li><a href="#">Dúvidas gerais</a></li>
-            <li><a href="#">Entregas</a></li>
-            <li><a href="#">Pedidos</a></li>
-            <li><a href="#">Devoluções</a></li>
-            <li><a href="#">Pagamentos</a></li>
-            <li><a href="#">Fale Conosco</a></li>
-            <li><a href="#">Relatar problema</a></li>
+            <li><a href="footer/duvidas.html">Dúvidas gerais</a></li>
+            <li><a href="footer/faleConosco.html">Fale Conosco</a></li>
+            <li><a href="footer/problema.html">Relatar problema</a></li>
           </ul>
         </div>
 
         <div class="footer-column">
           <h3>Sobre a RetroPoint</h3>
           <ul>
-            <li><a href="#">Propósito</a></li>
-            <li><a href="#">Sustentabilidade Retro</a></li>
+            <li><a href="footer/proposito.html">Propósito</a></li>
+            <li><a href="footer/sustentabilidade.html">Sustentabilidade Retro</a></li>
             <li><a href="sobre.html">Sobre a RetroPoint</a></li>
-            <li><a href="#">Trabalhe conosco</a></li>
-            <li><a href="#">Mapa do site</a></li>
+            <li><a href="footer/trabalheConosco.html">Trabalhe conosco</a></li>
+            <li><a href="footer/mapasite.html">Mapa do site</a></li>
             <li><a href="produtos.html">Guia de produtos</a></li>
           </ul>
         </div>
@@ -170,17 +165,47 @@
       <p>© 2025 RetroPoint. Todos os direitos reservados. | CNPJ: XX.XXX.XXX/0001-XX | Endereço: Rua dos Clássicos, 101
         - Retroville - MG.</p>
       <div class="footer-legal-links">
-        <a href="#">Brasil</a>
+        <a href="footer/nossaLoja.html">Brasil</a>
         <span class="separator">|</span>
         <a href="footer/politica.html">Política de privacidade</a>
         <span class="separator">|</span>
-        <a href="#">Política de cookies</a>
+        <a href="footer/cookies.html">Política de cookies</a>
         <span class="separator">|</span>
         <a href="footer/termos.html">Termos de uso</a>
       </div>
     </div>
   </footer>
 
+  <div id="cookie-banner" class="cookie-container">
+    <div class="cookie-content">
+        <p>
+            Utilizamos cookies para melhorar sua experiência em nosso ecossistema retro. 
+            Ao continuar, você concorda com nossa <a href="politica-cookies.html">Política de Cookies</a>.
+        </p>
+        <button id="accept-cookies" class="btn-cookie">Aceitar</button>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const banner = document.getElementById("cookie-banner");
+        const acceptBtn = document.getElementById("accept-cookies");
+
+        // Verifica se o usuário já aceitou anteriormente
+        if (!localStorage.getItem("cookiesAceitos")) {
+            // Mostra o banner com um pequeno delay para efeito visual
+            setTimeout(() => {
+                banner.classList.add("show");
+            }, 2000);
+        }
+
+        // Lógica ao clicar em Aceitar
+        acceptBtn.addEventListener("click", function() {
+            localStorage.setItem("cookiesAceitos", "true");
+            banner.classList.remove("show");
+        });
+    });
+</script>
 </body>
 
 </html>

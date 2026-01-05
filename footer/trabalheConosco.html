@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Trabalhe Conosco | RetroPoint</title>
+    <link rel="stylesheet" href="../css/estilo.css">
+    <link rel="icon" type="image/png" href="../imgs/logoRP.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body class="legal-body">
+
+    <main class="legal-card">
+        <header class="legal-header">
+            <img src="../imgs/logoRP.png" alt="Logo RetroPoint" style="width: 50px; opacity: 0.8; margin-bottom: 20px;">
+            <h1>Junte-se ao Time</h1>
+            <p class="last-update">Ajude-nos a construir o futuro da nostalgia</p>
+        </header>
+
+        <section class="legal-content">
+            <p>Na <strong>RetroPoint</strong>, buscamos pessoas que não apenas entendam de tecnologia, mas que vibrem com a história dos videogames. Se você é apaixonado por preservação, hardware clássico e inovação, seu lugar é aqui.</p>
+
+            <form action="https://formspree.io/f/mlgdzgbb" 
+            method="POST" id="careerForm" 
+            class="contact-form" 
+            enctype="multipart/form-data">
+                
+                <div class="input-row">
+                    <div class="form-group">
+                        <label for="nome">Nome Completo</label>
+                        <input type="text" id="nome" name="nome" placeholder="Seu nome" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">E-mail</label>
+                        <input type="email" id="email" name="email" placeholder="seu@email.com" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="area">Área de Interesse</label>
+                    <select id="area" name="area" required>
+                        <option value="desenvolvimento">Desenvolvimento / TI</option>
+                        <option value="curadoria">Curadoria de Hardware</option>
+                        <option value="atendimento">Suporte ao Colecionador</option>
+                        <option value="marketing">Marketing & Conteúdo</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="linkedin">Link do LinkedIn / Portfólio</label>
+                    <input type="url" id="linkedin" name="linkedin" placeholder="https://linkedin.com/in/seuusuario">
+                </div>
+
+                <div class="form-group">
+                    <label for="bio">Por que a RetroPoint? (Breve apresentação)</label>
+                    <textarea id="bio" name="bio" rows="4" placeholder="Conte-nos um pouco sobre sua paixão por games antigos..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="curriculo">Link para seu Currículo (Drive/Dropbox)</label>
+                    <input type="url" id="curriculo" name="curriculo" placeholder="Cole o link do seu arquivo aqui" required>
+                </div>
+
+                <button type="submit" class="btn-send">
+                    <i class="fa-solid fa-briefcase"></i> Enviar Candidatura
+                </button>
+            </form>
+        </section>
+
+        <footer class="legal-footer">
+            <a href="../index.html" class="btn-back">Voltar para o Início</a>
+        </footer>
+    </main>
+
+    <script>
+        // Mesma lógica de sucesso das páginas anteriores
+        const careerForm = document.getElementById('careerForm');
+        careerForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = this.querySelector('button');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enviando...';
+
+            const formData = new FormData(this);
+            try {
+                const res = await fetch(this.action, { method: 'POST', body: formData, headers: {'Accept': 'application/json'} });
+                if (res.ok) {
+                    this.innerHTML = `
+                        <div style="text-align: center; padding: 40px 0;">
+                            <i class="fa-solid fa-heart-pulse" style="font-size: 50px; color: #fff; margin-bottom: 20px;"></i>
+                            <h2 style="color: #fff;">Recebemos seu perfil!</h2>
+                            <p style="color: #888;">Nossa equipe de recrutamento entrará em contato caso seu perfil dê "match" com nossa cultura.</p>
+                            <button onclick="location.reload()" class="btn-back" style="margin-top: 20px; cursor: pointer;">Voltar</button>
+                        </div>`;
+                }
+            } catch {
+                alert("Erro ao enviar candidatura.");
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-briefcase"></i> Tentar Novamente';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Fale Conosco | RetroPoint</title>
+    <link rel="stylesheet" href="../css/estilo.css">
+    <link rel="icon" type="image/png" href="../imgs/logoRP.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body class="legal-body">
+
+    <main class="legal-card">
+        <header class="legal-header">
+            <img src="../imgs/logoRP.png" alt="Logo RetroPoint" style="width: 60px; opacity: 0.9; margin-bottom: 20px;">
+            <h1>Fale Conosco</h1>
+            <p class="last-update">Dúvidas, sugestões ou parcerias? Envie uma mensagem.</p>
+        </header>
+
+        <section class="legal-content">
+            <form 
+            action="https://formspree.io/f/mlgdzgbb" 
+            method="POST" 
+            id="contactForm" 
+            class="contact-form">
+                <div class="input-row">
+                    <div class="form-group">
+                        <label for="nome">Nome Completo</label>
+                        <input type="text" id="nome" name="nome" placeholder="Seu nome" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email_contato">E-mail</label>
+                        <input type="email" id="email_contato" name="email" placeholder="seu@email.com" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="assunto">Assunto</label>
+                    <select id="assunto" name="assunto">
+                        <option value="duvida">Dúvida Técnica</option>
+                        <option value="parceria">Parcerias</option>
+                        <option value="venda">Anúncios / Vitrine</option>
+                        <option value="outro">Outros</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="mensagem">Sua Mensagem</label>
+                    <textarea id="mensagem" name="mensagem" rows="5" placeholder="Como podemos ajudar?" required></textarea>
+                </div>
+
+                <button type="submit" class="btn-send">
+                    <i class="fa-solid fa-paper-plane"></i> Enviar Mensagem
+                </button>
+            </form>
+
+            <div class="direct-contact">
+                <p>Ou se preferir: <strong>contato@retropoint.com.br</strong></p>
+            </div>
+        </section>
+
+        <footer class="legal-footer">
+            <a href="../index.html" class="btn-back">Voltar para o Início</a>
+        </footer>
+    </main>
+
+    <script>
+    const contactForm = document.getElementById('contactForm');
+
+    contactForm.addEventListener('submit', async function(event) {
+        event.preventDefault(); // Impede o recarregamento da página
+        
+        const button = event.target.querySelector('button');
+        const originalButtonText = button.innerHTML;
+        
+        // Feedback visual de "Enviando..."
+        button.disabled = true;
+        button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enviando...';
+
+        const formData = new FormData(this);
+
+        try {
+            const response = await fetch(event.target.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                // Mensagem de Sucesso elegante
+                contactForm.innerHTML = `
+                    <div style="text-align: center; padding: 40px 0;">
+                        <i class="fa-solid fa-circle-check" style="font-size: 50px; color: #fff; margin-bottom: 20px;"></i>
+                        <h2 style="color: #fff; margin-bottom: 10px;">Mensagem Enviada!</h2>
+                        <p style="color: #888;">Obrigado pelo contato. Nossa equipe de entusiastas responderá em breve.</p>
+                        <button onclick="location.reload()" class="btn-back" style="margin-top: 30px; cursor: pointer;">Enviar outra mensagem</button>
+                    </div>
+                `;
+            } else {
+                throw new Error();
+            }
+        } catch (error) {
+            alert("Ops! Ocorreu um erro ao enviar. Tente novamente mais tarde.");
+            button.disabled = false;
+            button.innerHTML = originalButtonText;
+        }
+    });
+</script>
+
+</body>
+</html>
